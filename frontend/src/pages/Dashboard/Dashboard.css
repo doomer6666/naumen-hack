@@ -1,0 +1,31 @@
+.welcome-banner {
+    background: linear-gradient(135deg, #ff8c53 0%, var(--nau-orange) 100%);
+    border-radius: var(--border-radius);
+    padding: 32px;
+    color: var(--nau-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+}
+
+.welcome-text h2 {
+    font-size: 26px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.welcome-text p {
+    font-size: 16px;
+    opacity: 0.9;
+    max-width: 600px;
+    line-height: 1.5;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}

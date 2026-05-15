@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAUMEN | Дашборд адаптации</title>
+    <style>
+        /* Фирменные переменные NAUMEN */
+        :root {
+            --nau-orange: #ff6720;
+            --nau-orange-hover: #e55a19;
+            --nau-dark: #404040;
+            --nau-gray: #8c8d8e;
+            --nau-light-gray: #F6F6F6;
+            --nau-bg: #F4F5F7;
+            --nau-white: #FFFFFF;
+            --nau-border: #DEDEDE;
+
+            --success: #01B574;
+            --warning: #FFCE20;
+            --danger: #EE5D50;
+
+            --border-radius: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background-color: var(--nau-bg);
+            color: var(--nau-dark);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Боковая панель */
+        .sidebar {
+            width: 260px;
+            background-color: var(--nau-white);
+            border-right: 1px solid var(--nau-border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 0;
+        }
+
+        .logo-container {
+            padding: 0 24px 32px;
+        }
+
+        .nau-logo {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--nau-orange);
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+
+        .nau-logo-sub {
+            font-size: 11px;
+            color: var(--nau-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item {
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--nau-dark);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background-color: var(--nau-light-gray);
+            color: var(--nau-orange);
+        }
+
+        .nav-item.active {
+            background-color: #fff0e8;
+            border-left-color: var(--nau-orange);
+            color: var(--nau-orange);
+        }
+
+        /* Основной контент */
+        .main-content {
+            flex: 1;
+            padding: 32px 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--nau-white);
+            padding: 8px 16px 8px 8px;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--nau-border);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--nau-orange);
+            color: var(--nau-white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .user-info p.name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-info p.role {
+            font-size: 12px;
+            color: var(--nau-gray);
+        }
+
+        /* Приветственный баннер */
+        .welcome-banner {
+            background: linear-gradient(135deg, #ff8c53 0%, var(--nau-orange) 100%);
+            border-radius: var(--border-radius);
+            padding: 32px;
+            color: var(--nau-white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .welcome-text h2 {
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text p {
+            font-size: 16px;
+            opacity: 0.9;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+
+        /* Сетка виджетов */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .widget {
+            background: var(--nau-white);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid #eaeaea;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .widget-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--nau-dark);
+        }
+
+        .widget-subtitle {
+            font-size: 13px;
+            font-weight: normal;
+            color: var(--nau-gray);
+        }
+
+        /* Виджет Прогресса */
+        .progress-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            margin-top: 10px;
+        }
+
+        .progress-chart {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            /* 45% прогресса цветом NAUMEN */
+            background: conic-gradient(var(--nau-orange) 45%, var(--nau-light-gray) 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-inner {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--nau-white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-inner span.percent {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--nau-dark);
+        }
+
+        .progress-inner span.label {
+            font-size: 11px;
+            color: var(--nau-gray);
+            text-transform: uppercase;
+        }
+
+        .progress-stats p {
+            margin-bottom: 12px;
+            color: var(--nau-gray);
+            font-size: 14px;
+        }
+
+        .progress-stats strong {
+            color: var(--nau-dark);
+            font-size: 15px;
+        }
+
+        /* Виджет Настроения */
+        .mood-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: space-between;
+        }
+
+        .mood-question {
+            font-size: 15px;
+            color: var(--nau-dark);
+            margin-bottom: 20px;
+        }
+
+        .mood-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .mood-btn {
+            background: var(--nau-light-gray);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            flex: 1;
+            padding: 16px 0;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mood-btn span {
+            font-size: 12px;
+            color: var(--nau-gray);
+            font-weight: 600;
+        }
+
+        .mood-btn:hover {
+            background: #fff0e8;
+            transform: translateY(-2px);
+        }
+
+        .mood-btn.selected {
+            background: #fff0e8;
+            border-color: var(--nau-orange);
+        }
+
+        .mood-btn.selected span {
+            color: var(--nau-orange);
+        }
+
+        /* Виджет Задач */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            background: var(--nau-light-gray);
+            border-left: 4px solid transparent;
+        }
+
+        .task-item.today {
+            border-left-color: var(--nau-orange);
+        }
+
+        .task-item.tomorrow {
+            border-left-color: var(--warning);
+        }
+
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            border: 2px solid var(--nau-gray);
+            cursor: pointer;
+            margin-top: 2px;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-info h4 {
+            font-size: 15px;
+            color: var(--nau-dark);
+            margin-bottom: 4px;
+        }
+
+        .task-info p {
+            font-size: 13px;
+            color: var(--nau-gray);
+        }
+
+        .task-tag {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .task-tag.today-tag {
+            background: #ffeae0;
+            color: var(--nau-orange);
+        }
+
+        .task-tag.tomorrow-tag {
+            background: #fff8d6;
+            color: #b28c00;
+        }
+
+        /* Виджет Бейджей */
+        .badges-list {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .badge-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+            width: 80px;
+        }
+
+        .badge-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .badge-icon.gold {
+            background: linear-gradient(135deg, #FFCE20, #FF9900);
+        }
+
+        .badge-icon.blue {
+            background: linear-gradient(135deg, #4da1ff, #0056b3);
+        }
+
+        .badge-icon.locked {
+            background: var(--nau-light-gray);
+            color: var(--nau-gray);
+            box-shadow: none;
+            opacity: 0.6;
+        }
+
+        .badge-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--nau-dark);
+            line-height: 1.2;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="logo-container">
+            <a href="#" class="nau-logo">NAUMEN</a>
+            <span class="nau-logo-sub">Адаптация</span>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active">
+                <span style="font-size: 18px;">📊</span> Дашборд
+            </a>
+            <a href="#" class="nav-item">
+                <span style="font-size: 18px;">🗺️</span> План пути
+            </a>
+            <a href="#" class="nav-item">
+                <span style="font-size: 18px;">🏢</span> Справочник «Кто есть кто»
+            </a>
+            <a href="#" class="nav-item">
+                <span style="font-size: 18px;">🤖</span> Чат-ассистент
+            </a>
+            <a href="#" class="nav-item">
+                <span style="font-size: 18px;">⚙️</span> Настройки
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1 class="page-title">Главный экран</h1>
+            <div class="user-profile">
+                <div class="avatar">ВК</div>
+                <div class="user-info">
+                    <p class="name">Владимир Прямых</p>
+                    <p class="role">Java Разработчик</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="welcome-banner">
+            <div class="welcome-text">
+                <h2>Добро пожаловать в команду NAUMEN! 👋</h2>
+                <p>Вы успешно завершили этап оформления. Впереди много интересного! На этой неделе мы познакомим вас с
+                    корпоративной культурой и базовыми инструментами автоматизации.</p>
+            </div>
+            <div style="font-size: 72px;">🚀</div>
+        </div>
+
+        <div class="dashboard-grid">
+
+            <div class="widget">
+                <div class="widget-title">Прогресс адаптации <span class="widget-subtitle">Этап 1: Погружение</span>
+                </div>
+                <div class="progress-wrapper">
+                    <div class="progress-chart">
+                        <div class="progress-inner">
+                            <span class="percent">45%</span>
+                            <span class="label">Пройдено</span>
+                        </div>
+                    </div>
+                    <div class="progress-stats">
+                        <p>Выполнено задач: <strong>9 из 20</strong></p>
+                        <p>Пройдено курсов: <strong>2 из 5</strong></p>
+                        <p>Дней до конца этапа: <strong>14</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget">
+                <div class="widget-title">Как ваше настроение? <span class="widget-subtitle">Еженедельный пульс</span>
+                </div>
+                <div class="mood-container">
+                    <p class="mood-question">Оцените, насколько понятны текущие задачи и хватает ли вам доступов для
+                        работы?</p>
+                    <div class="mood-buttons">
+                        <button class="mood-btn">🤩 <span>Отлично</span></button>
+                        <button class="mood-btn selected">😊 <span>Хорошо</span></button>
+                        <button class="mood-btn">😐 <span>Нормально</span></button>
+                        <button class="mood-btn">😕 <span>Есть вопросы</span></button>
+                        <button class="mood-btn">🆘 <span>Нужна помощь</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget">
+                <div class="widget-title">Следующие шаги</div>
+                <div class="task-list">
+                    <div class="task-item today">
+                        <div class="task-checkbox"></div>
+                        <div class="task-info">
+                            <h4>Изучить лекцию "Инструменты автоматизации"</h4>
+                            <p>Курс «Промышленная разработка на Java»</p>
+                        </div>
+                        <div class="task-tag today-tag">Сегодня</div>
+                    </div>
+                    <div class="task-item today">
+                        <div class="task-checkbox"></div>
+                        <div class="task-info">
+                            <h4>Пройти тест для закрепления материала</h4>
+                            <p>Тест состоит из 5 вопросов (около 5 минут)</p>
+                        </div>
+                        <div class="task-tag today-tag">Сегодня</div>
+                    </div>
+                    <div class="task-item tomorrow">
+                        <div class="task-checkbox"></div>
+                        <div class="task-info">
+                            <h4>Встреча 1-to-1 с наставником</h4>
+                            <p>Обсуждение плана развития на испытательный срок</p>
+                        </div>
+                        <div class="task-tag tomorrow-tag">Завтра, 11:00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget">
+                <div class="widget-title">Ваши достижения <a href="#"
+                        style="font-size: 13px; color: var(--nau-orange); text-decoration: none;">Все бейджи</a></div>
+                <div class="badges-list">
+                    <div class="badge-item">
+                        <div class="badge-icon gold">🎯</div>
+                        <span class="badge-title">Первый старт</span>
+                    </div>
+                    <div class="badge-item">
+                        <div class="badge-icon blue">🤝</div>
+                        <span class="badge-title">Влился<br>в команду</span>
+                    </div>
+                    <div class="badge-item">
+                        <div class="badge-icon locked">🔒</div>
+                        <span class="badge-title">Мастер<br>Git</span>
+                    </div>
+                    <div class="badge-item">
+                        <div class="badge-icon locked">🔒</div>
+                        <span class="badge-title">Боевое<br>крещение</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</body>
+
+</html>

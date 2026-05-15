@@ -1,111 +1,419 @@
+/* === НАСТРОЙКИ БРЕНДА NAUMEN === */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  --nau-orange: #ff6720;
+  --nau-orange-hover: #e55a19;
+  --nau-orange-light: #fff0e8;
+  --nau-dark: #404040;
+  --nau-gray: #8c8d8e;
+  --nau-light-gray: #F6F6F6;
+  --nau-bg: #F4F5F7;
+  --nau-white: #FFFFFF;
+  --nau-border: #DEDEDE;
+  --success: #01B574;
+  --warning: #FFCE20;
+  --danger: #EE5D50;
+  --border-radius: 12px;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+* {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
+  font-family: var(--font-main);
 }
 
 body {
-  margin: 0;
+  background-color: var(--nau-bg);
+  color: var(--nau-dark);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
+/* === ОБЩИЙ LAYOUT === */
+.topbar {
+  background-color: var(--nau-white);
+  border-bottom: 1px solid var(--nau-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+.nau-logo-img {
+  height: 25px;
+
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 48px;
 }
 
-code {
+.logo-container {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.nau-logo {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--nau-orange);
+  letter-spacing: 1px;
+}
+
+.nau-logo-sub {
+  font-size: 11px;
+  color: var(--nau-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.topbar-nav {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.topbar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--nau-dark);
+  font-weight: 600;
   font-size: 15px;
-  line-height: 135%;
+  padding: 18px 0;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: visible;
+}
+
+.topbar-item:hover {
+  color: var(--nau-orange);
+}
+
+.topbar-item.active {
+  color: var(--nau-orange);
+  border-bottom-color: var(--nau-orange);
+}
+
+.main-content {
+  flex: 1;
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* === ОБЩИЕ КОМПОНЕНТЫ === */
+
+/* Профиль юзера (Лаконичный) */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
   padding: 4px 8px;
-  background: var(--code-bg);
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.user-profile:hover {
+  background: var(--nau-light-gray);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--nau-orange);
+  color: var(--nau-white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--nau-dark);
+}
+
+/* Виджет (Карточка) */
+.widget {
+  background: var(--nau-white);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid #eaeaea;
+  display: flex;
+  flex-direction: column;
+}
+
+.widget-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--nau-dark);
+}
+
+.widget-subtitle {
+  font-size: 13px;
+  font-weight: normal;
+  color: var(--nau-gray);
+}
+
+/* Круговой Прогресс */
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-top: 10px;
+}
+
+.progress-chart {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.progress-inner {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--nau-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-inner span.percent {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--nau-dark);
+}
+
+.progress-inner span.label {
+  font-size: 11px;
+  color: var(--nau-gray);
+  text-transform: uppercase;
+}
+
+.progress-stats p {
+  margin-bottom: 12px;
+  color: var(--nau-gray);
+  font-size: 14px;
+}
+
+.progress-stats strong {
+  color: var(--nau-dark);
+  font-size: 15px;
+}
+
+/* Настроение */
+.mood-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.mood-question {
+  font-size: 15px;
+  color: var(--nau-dark);
+  margin-bottom: 20px;
+}
+
+.mood-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mood-btn {
+  background: var(--nau-light-gray);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  flex: 1;
+  padding: 16px 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--nau-dark);
+}
+
+.mood-btn span {
+  font-size: 12px;
+  color: var(--nau-gray);
+  font-weight: 600;
+}
+
+.mood-btn:hover {
+  background: var(--nau-orange-light);
+  transform: translateY(-2px);
+}
+
+.mood-btn.selected {
+  background: var(--nau-orange-light);
+  border-color: var(--nau-orange);
+}
+
+.mood-btn.selected span {
+  color: var(--nau-orange);
+}
+
+/* Задачи */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--nau-light-gray);
+  border-left: 4px solid transparent;
+}
+
+.task-item.today {
+  border-left-color: var(--nau-orange);
+}
+
+.task-item.tomorrow {
+  border-left-color: var(--warning);
+}
+
+.task-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 2px solid var(--nau-gray);
+  cursor: pointer;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all 0.2s;
+}
+
+.task-checkbox:hover {
+  border-color: var(--nau-orange);
+}
+
+.task-info {
+  flex: 1;
+}
+
+.task-info h4 {
+  font-size: 15px;
+  color: var(--nau-dark);
+  margin-bottom: 4px;
+}
+
+.task-info p {
+  font-size: 13px;
+  color: var(--nau-gray);
+}
+
+.task-tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.task-tag.today-tag {
+  background: #ffeae0;
+  color: var(--nau-orange);
+}
+
+.task-tag.tomorrow-tag {
+  background: #fff8d6;
+  color: #b28c00;
+}
+
+/* Бейджи */
+.badges-list {
+  display: flex;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  width: 80px;
+}
+
+.badge-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.badge-icon.gold {
+  background: linear-gradient(135deg, #FFCE20, #FF9900);
+  color: #fff;
+}
+
+.badge-icon.blue {
+  background: linear-gradient(135deg, #4da1ff, #0056b3);
+  color: #fff;
+}
+
+.badge-icon.locked {
+  background: var(--nau-light-gray);
+  color: var(--nau-gray);
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.badge-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--nau-dark);
+  line-height: 1.2;
 }
