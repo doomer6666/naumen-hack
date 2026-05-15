@@ -47,7 +47,7 @@ const App: React.FC = () => {
           </Route>
 
           {/* Редирект по умолчанию */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
