@@ -5,6 +5,8 @@ import AppLayout from "./components/common/AppLayout";
 import LoginPage from "./pages/LoginPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import { PlanPage } from "./pages/Plan/Plan";
+import { DirectoryPage } from "./pages/Directory/Directory";
 
 const App: React.FC = () => {
   return (
@@ -18,8 +20,8 @@ const App: React.FC = () => {
           <Route element={<AppLayout />}>
             {/*Сотрудник*/}
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/plan" element={<PlaceholderPage />} />
-            <Route path="/directory" element={<PlaceholderPage />} />
+            <Route path="/plan" element={<PlanPage />} />
+            <Route path="/directory" element={<DirectoryPage />} />
             <Route path="/feedback" element={<PlaceholderPage />} />
 
             {/*HR*/}
