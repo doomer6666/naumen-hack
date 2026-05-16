@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, CheckCircle, TrendingUp, AlertTriangle, BarChart3, Users } from 'lucide-react';
+import { Clock, CheckCircle, ThumbsUp, AlertTriangle, BarChart3, Users } from 'lucide-react';
 import './HrDashboard.css';
 
 interface MetricCardProps {
@@ -57,10 +57,10 @@ const HrDashboard: React.FC = () => {
           icon={<Users size={24} />}
         />
         <MetricCard 
-          title="Индекс здоровья" 
-          value="8.5 / 10" 
-          subtitle="Тренд: рост 📈" 
-          icon={<TrendingUp size={24} />}
+          title="Удовлетворенность" 
+          value="92%" 
+          subtitle="На основе опросов" 
+          icon={<ThumbsUp size={24} />}
         />
       </div>
 
@@ -91,8 +91,8 @@ const HrDashboard: React.FC = () => {
 
         <div className="widget">
           <div className="widget-title">
-            <span>Здоровье онбординга</span>
-            <span className="widget-subtitle">Общий показатель</span>
+            <span>Прогресс по метрикам</span>
+            <span className="widget-subtitle">Средние значения</span>
           </div>
           <div className="hr-health-bars">
             <div className="hr-health-item">
@@ -101,7 +101,7 @@ const HrDashboard: React.FC = () => {
                 <span className="widget-subtitle">92%</span>
               </div>
               <div className="hr-progress-track">
-                <div className="hr-progress-fill success" style={{ width: '92%' }} />
+                <div className="hr-progress-fill brand" style={{ width: '92%' }} />
               </div>
             </div>
             <div className="hr-health-item">
@@ -110,7 +110,7 @@ const HrDashboard: React.FC = () => {
                 <span className="widget-subtitle">78%</span>
               </div>
               <div className="hr-progress-track">
-                <div className="hr-progress-fill warning" style={{ width: '78%' }} />
+                <div className="hr-progress-fill info" style={{ width: '78%' }} />
               </div>
             </div>
             <div className="hr-health-item">
@@ -119,7 +119,7 @@ const HrDashboard: React.FC = () => {
                 <span className="widget-subtitle">65%</span>
               </div>
               <div className="hr-progress-track">
-                <div className="hr-progress-fill danger" style={{ width: '65%' }} />
+                <div className="hr-progress-fill muted" style={{ width: '65%' }} />
               </div>
             </div>
           </div>

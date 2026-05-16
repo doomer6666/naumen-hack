@@ -1,59 +1,90 @@
-.hr-template-editor {
+.hr-emp-plan {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.hr-editor-header {
+.hr-emp-plan-title {
   display: flex;
-  align-items: center;
   gap: 16px;
+  flex: 1;
+  align-items: baseline;
 }
 
-.hr-icon-btn-lg {
+.hr-emp-plan-title .page-title {
+  margin: 0;
+}
+
+.hr-emp-mentor-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 24px;
+}
+
+.hr-emp-mentor-label {
+  font-size: 15px;
+  color: var(--nau-gray);
+  font-weight: 500;
+}
+
+.hr-emp-mentor-select {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid var(--nau-border);
-  background: var(--nau-white);
-  color: var(--nau-dark);
-  cursor: pointer;
+  gap: 12px;
+  background: var(--nau-light-gray);
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
   transition: all 0.2s ease;
 }
 
-.hr-icon-btn-lg:hover {
+.hr-emp-mentor-select:focus-within {
   border-color: var(--nau-orange);
-  color: var(--nau-orange);
-  background: var(--nau-orange-light);
+  background: var(--nau-white);
 }
 
-.hr-editor-title-input {
-  flex: 1;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--nau-dark);
+.hr-input-inline {
+  background: transparent;
   border: none;
   outline: none;
-  background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--nau-dark);
   font-family: var(--font-main);
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.2s ease;
-  padding-bottom: 4px;
 }
 
-.hr-editor-title-input:focus {
-  border-bottom-color: var(--nau-orange);
-}
-
-.hr-editor-stages {
+/* Checkbox */
+.hr-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--nau-border);
+  background: var(--nau-white);
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
+.hr-checkbox:hover {
+  border-color: var(--nau-orange);
+}
+
+/* Состояние выполненной задачи */
+.hr-task-card.completed .hr-checkbox {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.hr-task-card.completed .hr-task-title {
+  text-decoration: line-through;
+  color: var(--nau-gray);
+}
+
+/* === Drag & Drop стили (общие с шаблоном, но дублируем для изоляции) === */
 .hr-stage-card {
   background: var(--nau-white);
   border-radius: var(--border-radius);
@@ -64,7 +95,6 @@
   cursor: grab;
 }
 
-/* Стили для Drag-and-Drop */
 .hr-stage-card.dragging {
   opacity: 0.5;
   border: 1px dashed var(--nau-orange);
@@ -125,7 +155,6 @@
   cursor: grab;
 }
 
-/* Стили для Drag-and-Drop задач */
 .hr-task-card.dragging {
   opacity: 0.5;
   border: 1px dashed var(--nau-orange);
@@ -185,30 +214,6 @@
   background: var(--nau-orange-light);
 }
 
-.hr-add-stage-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 16px;
-  background: var(--nau-white);
-  border: 1px solid var(--nau-border);
-  border-radius: var(--border-radius);
-  color: var(--nau-gray);
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: var(--font-main);
-  transition: all 0.2s ease;
-}
-
-.hr-add-stage-btn:hover {
-  color: var(--nau-orange);
-  border-color: var(--nau-orange);
-  background: var(--nau-orange-light);
-  transform: translateY(-1px);
-}
-
 .hr-icon-btn {
   background: none;
   border: none;
@@ -220,6 +225,26 @@
 }
 
 .hr-icon-btn:hover {
-  color: var(--nau-orange);
-  background: var(--nau-orange-light);
+  color: var(--danger);
+  background: #fde8e8;
+}
+
+.hr-btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--nau-orange);
+  color: var(--nau-white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hr-btn-primary:hover {
+  background: var(--nau-orange-hover);
+  transform: translateY(-1px);
 }

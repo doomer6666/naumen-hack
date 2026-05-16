@@ -12,6 +12,10 @@ import HrTemplates from "./pages/Hr/HrTemplates";
 import HrTemplateEditor from "./pages/Hr/HrTemplateEditor";
 import { AchievementsPage } from "./pages/Achievements/Achievements";
 import { ProfilePage } from "./pages/Profile/ProfilePage";
+import HrEmployees from "./pages/Hr/HrEmployees";
+import HrEmployeePlan from "./pages/Hr/HrEmployeePlan";
+import HrFeedbacks from "./pages/Hr/HrFeedbacks";
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -38,12 +42,12 @@ const App: React.FC = () => {
               path="/hr/templates/:id/edit"
               element={<HrTemplateEditor />}
             />
-            <Route path="/hr/employees" element={<PlaceholderPage />} />
+            <Route path="/hr/employees" element={<HrEmployees />} />
             <Route
               path="/hr/employees/:id/plan"
-              element={<PlaceholderPage />}
+              element={<HrEmployeePlan />}
             />
-            <Route path="/hr/feedbacks" element={<PlaceholderPage />} />
+            <Route path="/hr/feedbacks" element={<HrFeedbacks />} />
             <Route path="/hr/integrations" element={<PlaceholderPage />} />
             <Route path="/hr/settings" element={<PlaceholderPage />} />
 

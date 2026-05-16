@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, Save, GripVertical, Plus, Trash2, 
-  Calendar, Link, ChevronDown, ChevronUp 
-} from 'lucide-react';
-import './HrTemplateEditor.css';
+import { ArrowLeft, Save, User, Calendar, Plus, Trash2, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
+import './HrEmployeePlan.css';
 
 interface Task {
   id: string;
   title: string;
   deadline: string;
-  jiraTemplate?: string;
+  isCompleted: boolean;
 }
 
 interface Stage {
@@ -20,39 +17,29 @@ interface Stage {
   tasks: Task[];
 }
 
-const HrTemplateEditor: React.FC = () => {
+const HrEmployeePlan: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [templateName, setTemplateName] = useState(
-    id === 'new' ? 'Новый шаблон' : 'Стандартный онбординг'
-  );
-
+  const [mentor, setMentor] = useState('Иван Петров');
+  
   const [stages, setStages] = useState<Stage[]>([
     {
       id: 's1',
       title: 'Day 1: Первые шаги',
       isOpen: true,
       tasks: [
-        { id: 't1', title: 'Выдать доступы к CRM', deadline: 'Day 1', jiraTemplate: 'ACCESS-1' },
-        { id: 't2', title: 'Познакомить с командой', deadline: 'Day 1' },
+        { id: 't1', title: 'Выдать доступы к CRM', deadline: 'Day 1', isCompleted: true },
+        { id: 't2', title: 'Познакомить с командой', deadline: 'Day 1', isCompleted: true },
       ],
     },
     {
       id: 's2',
       title: 'Day 7: Погружение',
-      isOpen: false,
+      isOpen: true,
       tasks: [
-        { id: 't3', title: 'Пройти курс по продукту', deadline: 'Day 7', jiraTemplate: 'LEARN-3' },
-        { id: 't4', title: 'Контрольная точка с ментором', deadline: 'Day 7' },
-      ],
-    },
-    {
-      id: 's3',
-      title: 'Month 1: Первые результаты',
-      isOpen: false,
-      tasks: [
-        { id: 't5', title: 'Закрыть первый тикет в Jira', deadline: 'Month 1' },
+        { id: 't3', title: 'Пройти курс по продукту', deadline: 'Day 7', isCompleted: false },
+        { id: 't4', title: 'Контрольная точка с ментором', deadline: 'Day 7', isCompleted: false },
       ],
     },
   ]);
@@ -62,29 +49,30 @@ const HrTemplateEditor: React.FC = () => {
   const [draggedTaskInfo, setDraggedTaskInfo] = useState<{ stageId: string; taskId: string } | null>(null);
 
   const toggleStage = (stageId: string) => {
-    setStages(stages.map(s => 
-      s.id === stageId ? { ...s, isOpen: !s.isOpen } : s
-    ));
-  };
-
-  const addStage = () => {
-    const newStage: Stage = {
-      id: `s${Date.now()}`,
-      title: 'Новый этап',
-      isOpen: true,
-      tasks: []
-    };
-    setStages([...stages, newStage]);
+    setStages(stages.map(s => s.id === stageId ? { ...s, isOpen: !s.isOpen } : s));
   };
 
   const addTask = (stageId: string) => {
-    const newTask: Task = {
-      id: `t${Date.now()}`,
-      title: 'Новая задача',
-      deadline: 'Day 1'
-    };
+    const newTask: Task = { id: `t${Date.now()}`, title: 'Новая задача', deadline: 'Day 14', isCompleted: false };
+    setStages(stages.map(s => s.id === stageId ? { ...s, tasks: [...s.tasks, newTask] } : s));
+  };
+
+  const toggleTask = (stageId: string, taskId: string) => {
     setStages(stages.map(s => 
-      s.id === stageId ? { ...s, tasks: [...s.tasks, newTask] } : s
+      s.id === stageId 
+        ? { ...s, tasks: s.tasks.map(t => t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t) } 
+        : s
+    ));
+  };
+
+  // --- Удаление ---
+  const deleteStage = (stageId: string) => {
+    setStages(stages.filter(s => s.id !== stageId));
+  };
+
+  const deleteTask = (stageId: string, taskId: string) => {
+    setStages(stages.map(s => 
+      s.id === stageId ? { ...s, tasks: s.tasks.filter(t => t.id !== taskId) } : s
     ));
   };
 
@@ -149,21 +137,32 @@ const HrTemplateEditor: React.FC = () => {
   };
 
   return (
-    <div className="hr-template-editor">
+    <div className="hr-emp-plan">
       <div className="hr-editor-header">
-        <button className="hr-icon-btn-lg" onClick={() => navigate('/hr/templates')}>
+        <button className="hr-icon-btn-lg" onClick={() => navigate('/hr/employees')}>
           <ArrowLeft size={20} />
         </button>
-        <input 
-          type="text"
-          value={templateName}
-          onChange={(e) => setTemplateName(e.target.value)}
-          className="hr-editor-title-input"
-        />
+        <div className="hr-emp-plan-title">
+          <h1 className="page-title">План: Алексей Смирнов</h1>
+          <span className="task-tag status-delayed" style={{ alignSelf: 'center' }}>Отстает</span>
+        </div>
         <button className="hr-btn-primary">
           <Save size={18} />
           Сохранить
         </button>
+      </div>
+
+      <div className="widget hr-emp-mentor-card">
+        <div className="hr-emp-mentor-label">Наставник</div>
+        <div className="hr-emp-mentor-select">
+          <User size={20} color="var(--nau-orange)" />
+          <input 
+            type="text" 
+            value={mentor} 
+            onChange={(e) => setMentor(e.target.value)}
+            className="hr-input-inline"
+          />
+        </div>
       </div>
 
       <div className="hr-editor-stages">
@@ -177,15 +176,13 @@ const HrTemplateEditor: React.FC = () => {
             onDrop={(e) => handleStageDrop(e, stage.id)}
           >
             <div className="hr-stage-header" onClick={() => toggleStage(stage.id)}>
-              <div className="hr-stage-drag">
-                <GripVertical size={20} color="var(--nau-gray)" />
-              </div>
+              <div className="hr-stage-drag"><GripVertical size={20} color="var(--nau-gray)" /></div>
               <div className="hr-stage-info">
                 <h3>{stage.title}</h3>
-                <span className="widget-subtitle">{stage.tasks.length} задач</span>
+                <span className="widget-subtitle">{stage.tasks.filter(t => t.isCompleted).length} / {stage.tasks.length} выполнено</span>
               </div>
               <div className="hr-stage-actions">
-                <button className="hr-icon-btn" onClick={(e) => { e.stopPropagation(); }}>
+                <button className="hr-icon-btn" onClick={(e) => { e.stopPropagation(); deleteStage(stage.id); }}>
                   <Trash2 size={16} />
                 </button>
                 {stage.isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -197,31 +194,24 @@ const HrTemplateEditor: React.FC = () => {
                 {stage.tasks.map((task) => (
                   <div 
                     key={task.id} 
-                    className={`hr-task-card ${draggedTaskInfo?.taskId === task.id ? 'dragging' : ''}`}
+                    className={`hr-task-card ${task.isCompleted ? 'completed' : ''} ${draggedTaskInfo?.taskId === task.id ? 'dragging' : ''}`}
                     draggable
                     onDragStart={(e) => handleTaskDragStart(e, stage.id, task.id)}
                     onDragOver={handleTaskDragOver}
                     onDrop={(e) => handleTaskDrop(e, stage.id, task.id)}
                   >
-                    <div className="hr-task-drag">
-                      <GripVertical size={16} color="var(--nau-gray)" />
-                    </div>
+                    <div className="hr-task-drag"><GripVertical size={16} color="var(--nau-gray)" /></div>
+                    <button className="hr-checkbox" onClick={() => toggleTask(stage.id, task.id)}>
+                      {task.isCompleted && <CheckIcon />}
+                    </button>
                     <div className="hr-task-content">
                       <span className="hr-task-title">{task.title}</span>
-                      <div className="hr-task-meta">
-                        <span className="task-tag today-tag">
-                          <Calendar size={12} style={{ marginRight: '4px' }} />
-                          {task.deadline}
-                        </span>
-                        {task.jiraTemplate && (
-                          <span className="task-tag" style={{ background: '#e3eafc', color: '#3b82f6' }}>
-                            <Link size={12} style={{ marginRight: '4px' }} />
-                            Jira: {task.jiraTemplate}
-                          </span>
-                        )}
-                      </div>
+                      <span className="task-tag today-tag">
+                        <Calendar size={12} style={{ marginRight: '4px' }} />
+                        {task.deadline}
+                      </span>
                     </div>
-                    <button className="hr-icon-btn">
+                    <button className="hr-icon-btn" onClick={() => deleteTask(stage.id, task.id)}>
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -234,14 +224,16 @@ const HrTemplateEditor: React.FC = () => {
             )}
           </div>
         ))}
-
-        <button className="hr-add-stage-btn" onClick={addStage}>
-          <Plus size={20} />
-          Добавить этап
-        </button>
       </div>
     </div>
   );
 };
 
-export default HrTemplateEditor;
+// Микро-компонент для галочки
+const CheckIcon: React.FC = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--nau-white)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+export default HrEmployeePlan;

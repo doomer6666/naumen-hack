@@ -1,3 +1,10 @@
+/* Добавляем новые переменные для графиков в корень */
+:root {
+  --chart-orange-dark: #c44b10;
+  --chart-orange-mid: #ff6720;
+  --chart-orange-light: #ffaa77;
+}
+
 .hr-dashboard {
   display: flex;
   flex-direction: column;
@@ -52,7 +59,7 @@
   gap: 24px;
 }
 
-/* Mood Chart */
+/* Mood Chart - 3 оттенка оранжевого */
 .hr-mood-chart {
   display: flex;
   gap: 24px;
@@ -84,9 +91,9 @@
   transition: height 0.3s ease;
 }
 
-.hr-mood-bar.positive { background-color: var(--success); }
-.hr-mood-bar.neutral { background-color: var(--warning); }
-.hr-mood-bar.negative { background-color: var(--danger); }
+.hr-mood-bar.positive { background-color: var(--chart-orange-mid); }
+.hr-mood-bar.neutral { background-color: var(--chart-orange-light); }
+.hr-mood-bar.negative { background-color: var(--chart-orange-dark); }
 
 .hr-mood-label {
   font-size: 12px;
@@ -114,11 +121,11 @@
   border-radius: 50%;
 }
 
-.hr-legend-dot.positive { background-color: var(--success); }
-.hr-legend-dot.neutral { background-color: var(--warning); }
-.hr-legend-dot.negative { background-color: var(--danger); }
+.hr-legend-dot.positive { background-color: var(--chart-orange-mid); }
+.hr-legend-dot.neutral { background-color: var(--chart-orange-light); }
+.hr-legend-dot.negative { background-color: var(--chart-orange-dark); }
 
-/* Health Bars */
+/* Health Bars - 3 оттенка оранжевого */
 .hr-health-bars {
   display: flex;
   flex-direction: column;
@@ -152,9 +159,9 @@
   transition: width 0.4s ease;
 }
 
-.hr-progress-fill.success { background: var(--success); }
-.hr-progress-fill.warning { background: var(--warning); }
-.hr-progress-fill.danger { background: var(--danger); }
+.hr-progress-fill.brand { background: var(--chart-orange-dark); }
+.hr-progress-fill.info { background: var(--chart-orange-mid); }
+.hr-progress-fill.muted { background: var(--chart-orange-light); }
 
 /* Risk Widget */
 .hr-risk-list {

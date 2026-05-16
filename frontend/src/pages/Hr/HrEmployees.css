@@ -1,0 +1,130 @@
+.hr-employees {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hr-employees-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hr-invite-form {
+  padding: 20px;
+  border: 1px solid var(--nau-orange);
+  background: var(--nau-orange-light);
+}
+
+.hr-invite-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.hr-invite-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.hr-invite-body {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.hr-invite-body .hr-templates-search {
+  flex: 1;
+  margin-bottom: 0;
+  background: var(--nau-white);
+}
+
+.hr-invite-body .hr-btn-primary {
+  flex-shrink: 0;
+}
+
+/* Table */
+.hr-emp-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.hr-emp-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--nau-gray);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--nau-border);
+}
+
+.hr-emp-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  align-items: center;
+  border-bottom: 1px solid var(--nau-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hr-emp-row:last-child {
+  border-bottom: none;
+}
+
+.hr-emp-row:hover {
+  background: var(--nau-light-gray);
+}
+
+.hr-emp-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hr-emp-info h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--nau-dark);
+}
+
+.hr-emp-info p {
+  font-size: 13px;
+  color: var(--nau-gray);
+}
+
+.hr-emp-date, .hr-emp-mentor {
+  font-size: 14px;
+  color: var(--nau-dark);
+}
+
+/* Status Tags */
+.task-tag.status-adapting {
+  background: var(--nau-orange-light);
+  color: var(--nau-orange);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-tag.status-completed {
+  background: #e6f9f0;
+  color: var(--success);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-tag.status-delayed {
+  background: #fde8e8;
+  color: var(--danger);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
