@@ -9,6 +9,7 @@ export type UserRole = "newbie" | "hr" | "mentor";
 
 interface AuthContextType {
   role: UserRole;
+  setRole: (role: UserRole) => void;
   isAuthenticated: boolean;
   login: (role: UserRole) => void;
   logout: () => void;
@@ -44,6 +45,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     <AuthContext.Provider
       value={{
         role,
+        setRole,
         isAuthenticated,
         login,
         logout,
