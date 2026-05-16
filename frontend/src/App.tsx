@@ -15,6 +15,8 @@ import { ProfilePage } from "./pages/Profile/ProfilePage";
 import HrEmployees from "./pages/Hr/HrEmployees";
 import HrEmployeePlan from "./pages/Hr/HrEmployeePlan";
 import HrFeedbacks from "./pages/Hr/HrFeedbacks";
+import MenteesList from "./pages/Mentor/MenteesList";
+import MenteeProgress from "./pages/Mentor/MenteeProgress";
 
 const App: React.FC = () => {
   return (
@@ -52,10 +54,10 @@ const App: React.FC = () => {
             <Route path="/hr/settings" element={<PlaceholderPage />} />
 
             {/*Ментор*/}
-            <Route path="/mentor/my-mentees" element={<PlaceholderPage />} />
+            <Route path="/mentor/my-mentees" element={<MenteesList />} />
             <Route
               path="/mentor/my-mentees/:id/progress"
-              element={<PlaceholderPage />}
+              element={<MenteeProgress />}
             />
           </Route>
 

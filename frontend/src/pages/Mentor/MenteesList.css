@@ -1,0 +1,132 @@
+.mentees-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mentees-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mentees-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mentees-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.mentee-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 16px;
+}
+
+.mentee-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.mentee-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.mentee-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mentee-user h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--nau-dark);
+}
+
+.mentee-user p {
+  font-size: 13px;
+  color: var(--nau-gray);
+  margin-top: 2px;
+}
+
+.mentee-progress-section {
+  margin: 16px 0;
+}
+
+.mentee-progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.mentee-progress-percent {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--nau-dark);
+}
+
+/* Переиспользуем треки из HR */
+.hr-progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--nau-light-gray);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hr-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.hr-progress-fill.brand { background: var(--nau-orange); }
+.hr-progress-fill.danger { background: var(--danger); }
+
+.mentee-days-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--nau-gray);
+  margin-top: auto;
+}
+
+.mentee-days-left.completed {
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* Status tags (наследуем от HR, но добавляем на всякий случай) */
+.task-tag.status-adapting {
+  background: var(--nau-orange-light);
+  color: var(--nau-orange);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-tag.status-completed {
+  background: #e6f9f0;
+  color: var(--success);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-tag.status-delayed {
+  background: #fde8e8;
+  color: var(--danger);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
