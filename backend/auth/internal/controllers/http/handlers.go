@@ -13,4 +13,3 @@ func NewHandlers(service *usecase.UserService) *Handlers {
 		userService: service,
 	}
 }
-

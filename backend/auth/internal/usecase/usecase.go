@@ -53,4 +53,3 @@ func NewUserService(postgres *postgres.Pool, jwtFactory *jwtfactory.JWTFactory) 
 func (u *UserService) ReadUserByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
 	return u.postgres.ReadUserByID(ctx, id)
 }
-
