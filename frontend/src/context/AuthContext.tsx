@@ -9,7 +9,9 @@ export type UserRole = "newbie" | "hr" | "mentor";
 
 interface AuthContextType {
   role: UserRole;
-  setRole: (role: UserRole) => void;
+  isAuthenticated: boolean;
+  login: (role: UserRole) => void;
+  logout: () => void;
   userName: string;
   userInitials: string;
 }
@@ -26,16 +28,27 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  //'newbie', 'hr', 'mentor'
   const [role, setRole] = useState<UserRole>("newbie");
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  const login = (selectedRole: UserRole) => {
+    setRole(selectedRole);
+    setIsAuthenticated(true);
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+  };
 
   return (
     <AuthContext.Provider
       value={{
         role,
-        setRole,
-        userName: "Игорь Гофман",
-        userInitials: "67",
+        isAuthenticated,
+        login,
+        logout,
+        userName: "Владимир Прямых",
+        userInitials: "ВК",
       }}
     >
       {children}

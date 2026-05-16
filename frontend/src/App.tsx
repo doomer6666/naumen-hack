@@ -11,7 +11,7 @@ import HrDashboard from "./pages/Hr/HrDashboard";
 import HrTemplates from "./pages/Hr/HrTemplates";
 import HrTemplateEditor from "./pages/Hr/HrTemplateEditor";
 import { AchievementsPage } from "./pages/Achievements/Achievements";
-
+import { ProfilePage } from "./pages/Profile/ProfilePage";
 const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -22,6 +22,8 @@ const App: React.FC = () => {
 
           {/* Защищенные маршруты */}
           <Route element={<AppLayout />}>
+            <Route path="/profile" element={<ProfilePage />} />
+
             {/*Сотрудник*/}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/plan" element={<PlanPage />} />

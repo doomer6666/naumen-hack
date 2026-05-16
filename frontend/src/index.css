@@ -417,3 +417,54 @@ a {
   color: var(--nau-dark);
   line-height: 1.2;
 }
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--nau-white);
+  border: 1px solid var(--nau-border);
+  transition: all 0.2s ease;
+}
+
+.task-item.active {
+  border-color: var(--nau-orange);
+  box-shadow: 0 4px 12px rgba(255, 103, 32, 0.08);
+  background: var(--nau-white);
+}
+
+.task-item.warning {
+  border-color: var(--warning);
+  box-shadow: 0 4px 12px rgba(255, 206, 32, 0.15);
+}
+
+.task-item.danger {
+  border-color: var(--danger);
+  box-shadow: 0 4px 12px rgba(238, 93, 80, 0.08);
+}
+
+.task-item.locked {
+  opacity: 0.6;
+  background: var(--nau-light-gray);
+  border-color: transparent;
+}
+
+.task-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid var(--nau-border);
+  background: var(--nau-white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.task-checkbox.checked {
+  background: var(--success);
+  border-color: var(--success);
+}
