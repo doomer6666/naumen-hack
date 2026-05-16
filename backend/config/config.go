@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	jwtfactory "nau/auth/internal/adapter/JWTFactory"
 	"nau/auth/internal/adapter/postgres"
 	"nau/auth/pkg/httpserver"
 
@@ -17,8 +18,9 @@ type App struct {
 }
 
 type Config struct {
-	App  App
-	HTTP httpserver.Config
+	App        App
+	HTTP       httpserver.Config
+	JWTFactory jwtfactory.Config
 	// Logger   logger.Config
 	Postgres postgres.Config
 }
