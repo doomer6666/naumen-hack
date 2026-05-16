@@ -26,8 +26,8 @@ func New(ctx context.Context, c Config) (*Pool, error) {
 	const op = "postgres.New"
 
 	DBURL := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable&connect_timeout=5s",
-		c.User, c.Password, c.Host, c.Port, c.DBName)
+    "postgres://%s:%s@%s:%s/%s?sslmode=disable&connect_timeout=5",
+    c.User, c.Password, c.Host, c.Port, c.DBName)
 
 	pool, err := pgxpool.New(ctx, DBURL)
 	if err != nil {
@@ -154,4 +154,31 @@ func (p *Pool) GetUserPassword(ctx context.Context, email domain.Email) (string,
 	}
 
 	return passwordHash, nil
+}
+
+func (p *Pool) Close() {
+	p.pool.Close()
+}
+
+func (p *Pool) ReadUserByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
+	const op = "postgres.ReadUserByID"
+
+	sql := `SELECT id, name, role, team, password_hash, email, created_at FROM users WHERE id = $1`
+
+	var user domain.User
+
+	err := p.pool.QueryRow(ctx, sql, id).
+		Scan(
+			&user.ID,
+			&user.Name,
+			&user.Role,
+			&user.Team,
+			&user.PasswordHash,
+			&user.Email,
+			&user.CreatedAt,
+		)
+	if err != nil {
+		return user, fmt.Errorf("unable to read user by id: %s: %w", op, err)
+	}
+	return user, nil
 }

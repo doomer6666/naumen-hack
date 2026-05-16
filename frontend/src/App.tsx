@@ -16,7 +16,6 @@ import HrEmployees from "./pages/Hr/HrEmployees";
 import HrEmployeePlan from "./pages/Hr/HrEmployeePlan";
 import HrFeedbacks from "./pages/Hr/HrFeedbacks";
 import MenteesList from "./pages/Mentor/MenteesList";
-import MenteeProgress from "./pages/Mentor/MenteeProgress";
 
 const App: React.FC = () => {
   return (

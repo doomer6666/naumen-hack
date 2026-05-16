@@ -29,6 +29,7 @@ type Postgres interface {
 	) (uuid.UUID, error)
 
 	ReadUser(ctx context.Context, email domain.Email) (domain.User, error)
+	ReadUserByID(ctx context.Context, id uuid.UUID) (domain.User, error) // <-- Добавлено
 
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 
@@ -43,4 +44,9 @@ func NewUserService(postgres *postgres.Pool) (*UserService, error) {
 	return &UserService{
 		postgres: postgres,
 	}, nil
+}
+
+// Добавляем метод-обертку для middleware
+func (u *UserService) ReadUserByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
+	return u.postgres.ReadUserByID(ctx, id)
 }
