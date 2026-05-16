@@ -11,6 +11,7 @@ import {
   Plug,
   Settings,
   UserCheck,
+  Trophy,
 } from "lucide-react";
 import UserProfile from "./UserProfile";
 import { useAuth, type UserRole } from "../../context/AuthContext";
@@ -27,6 +28,7 @@ const navPools: Record<UserRole, NavItem[]> = {
     { path: "/plan", icon: Map, label: "План пути" },
     { path: "/directory", icon: Building2, label: "Справочник" },
     { path: "/feedback", icon: MessageSquare, label: "Обратная связь" },
+    { path: "/achievements", icon: Trophy, label: "Достижения" },
   ],
   hr: [
     { path: "/hr/dashboard", icon: BarChart2, label: "Аналитика" },

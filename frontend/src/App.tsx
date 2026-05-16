@@ -10,6 +10,7 @@ import { DirectoryPage } from "./pages/Directory/Directory";
 import HrDashboard from "./pages/Hr/HrDashboard";
 import HrTemplates from "./pages/Hr/HrTemplates";
 import HrTemplateEditor from "./pages/Hr/HrTemplateEditor";
+import { AchievementsPage } from "./pages/Achievements/Achievements";
 
 const App: React.FC = () => {
   return (
@@ -26,6 +27,7 @@ const App: React.FC = () => {
             <Route path="/plan" element={<PlanPage />} />
             <Route path="/directory" element={<DirectoryPage />} />
             <Route path="/feedback" element={<PlaceholderPage />} />
+            <Route path="/achievements" element={<AchievementsPage />} />
 
             {/*HR*/}
             <Route path="/hr/dashboard" element={<HrDashboard />} />
