@@ -1,7 +1,6 @@
 package http
 
 import (
-	"crypto/rsa"
 	"net/http"
 
 	"nau/auth/internal/usecase"
@@ -11,7 +10,7 @@ import (
 )
 
 // Роутинг (добавлен аргумент publicKey *rsa.PublicKey)
-func Router(service *usecase.UserService, publicKey *rsa.PublicKey) http.Handler {
+func Router(service *usecase.UserService) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
@@ -22,6 +21,7 @@ func Router(service *usecase.UserService, publicKey *rsa.PublicKey) http.Handler
 	r.Get("/ready", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
 
 	handlers := NewHandlers(service)
+
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/v1", func(r chi.Router) {
 			// Публичные роуты
@@ -36,6 +36,7 @@ func Router(service *usecase.UserService, publicKey *rsa.PublicKey) http.Handler
 		})
 	})
 
+	r.Get("/.well-known/jwks.json", handlers.JWKS)
+
 	return r
 }
-
