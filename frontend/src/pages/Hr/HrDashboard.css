@@ -1,0 +1,198 @@
+.hr-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hr-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.hr-metric-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.hr-metric-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--nau-orange-light);
+  color: var(--nau-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hr-metric-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.hr-metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--nau-dark);
+  margin: 4px 0;
+}
+
+.hr-metric-sub {
+  font-size: 12px;
+  color: var(--nau-gray);
+}
+
+.hr-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* Mood Chart */
+.hr-mood-chart {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  height: 160px;
+  padding-top: 20px;
+}
+
+.hr-mood-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.hr-mood-bar-container {
+  width: 100%;
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  flex: 1;
+}
+
+.hr-mood-bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s ease;
+}
+
+.hr-mood-bar.positive { background-color: var(--success); }
+.hr-mood-bar.neutral { background-color: var(--warning); }
+.hr-mood-bar.negative { background-color: var(--danger); }
+
+.hr-mood-label {
+  font-size: 12px;
+  color: var(--nau-gray);
+}
+
+.hr-mood-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.hr-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--nau-gray);
+}
+
+.hr-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.hr-legend-dot.positive { background-color: var(--success); }
+.hr-legend-dot.neutral { background-color: var(--warning); }
+.hr-legend-dot.negative { background-color: var(--danger); }
+
+/* Health Bars */
+.hr-health-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hr-health-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hr-health-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--nau-dark);
+}
+
+.hr-progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--nau-light-gray);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hr-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.hr-progress-fill.success { background: var(--success); }
+.hr-progress-fill.warning { background: var(--warning); }
+.hr-progress-fill.danger { background: var(--danger); }
+
+/* Risk Widget */
+.hr-risk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hr-risk-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--nau-light-gray);
+  border-radius: 8px;
+  border-left: 4px solid var(--danger);
+  transition: all 0.2s ease;
+}
+
+.hr-risk-item:hover {
+  background: #fceaea;
+}
+
+.hr-risk-info {
+  flex: 1;
+}
+
+.hr-risk-info h4 {
+  font-size: 15px;
+  color: var(--nau-dark);
+}
+
+.hr-risk-info p {
+  font-size: 13px;
+  color: var(--nau-gray);
+}
+
+.hr-risk-issue {
+  display: flex;
+  align-items: center;
+}

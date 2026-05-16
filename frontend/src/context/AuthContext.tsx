@@ -34,8 +34,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       value={{
         role,
         setRole,
-        userName: "Владимир Прямых",
-        userInitials: "ВК",
+        userName: "Игорь Гофман",
+        userInitials: "67",
       }}
     >
       {children}
