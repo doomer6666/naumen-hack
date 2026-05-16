@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Check, Lock, Award, Target } from "lucide-react";
+import { Lock, Award, Target, ChevronDown, ChevronUp } from "lucide-react";
 import "./Plan.css";
+import { useAuth } from "../../context/AuthContext";
 
 interface Task {
   id: string;
@@ -25,7 +26,7 @@ interface PlanStage {
   milestone: Milestone;
 }
 
-//Моки
+// === Моки ===
 const initialStages: PlanStage[] = [
   {
     id: "stage-1",
@@ -40,7 +41,7 @@ const initialStages: PlanStage[] = [
         isCompleted: true,
       },
       { id: "t2", title: "Изучить структуру компании", isCompleted: true },
-      { id: "t3", title: "Встреча с ментором", isCompleted: true },
+      { id: "t3", title: "Встреча с наставником", isCompleted: true },
     ],
     milestone: {
       title: "Первые шаги сделаны",
@@ -83,18 +84,36 @@ const initialStages: PlanStage[] = [
     ],
     milestone: {
       title: "Завершение адаптации",
-      description: "Переход в статус Full-time специалиста",
+      description: "Переход в статус полноценного специалиста",
     },
   },
 ];
 
 export const PlanPage: React.FC = () => {
-  const [stages, setStages] = useState<PlanStage[]>(initialStages);
+  const { role } = useAuth();
+  // Редактировать могут только наставники или HR
+  const isEditable = role === "mentor" || role === "hr";
 
-  const toggleTask = (stageId: string, taskId: string) => {
+  const [stages, setStages] = useState<PlanStage[]>(initialStages);
+  // Храним ID раскрытых завершенных этапов
+  const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set());
+
+  // Логика переключения задачи
+  const toggleTask = (
+    stageId: string,
+    taskId: string,
+    stageStatus: StageStatus,
+  ) => {
+    if (
+      !isEditable ||
+      stageStatus === "completed" ||
+      stageStatus === "upcoming"
+    )
+      return;
+
     setStages((prevStages) =>
       prevStages.map((stage) => {
-        if (stage.id !== stageId || stage.status === "upcoming") return stage;
+        if (stage.id !== stageId) return stage;
 
         const updatedTasks = stage.tasks.map((task) =>
           task.id === taskId
@@ -107,99 +126,150 @@ export const PlanPage: React.FC = () => {
     );
   };
 
+  // Логика сворачивания/раскрытия выполненных блоков
+  const toggleStageCollapse = (stageId: string) => {
+    setExpandedStages((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(stageId)) {
+        newSet.delete(stageId);
+      } else {
+        newSet.add(stageId);
+      }
+      return newSet;
+    });
+  };
+
   return (
-    <>
+    <div className="main-content">
       <div className="plan-container">
         <div className="plan-header">
           <h1 className="page-title">План адаптации</h1>
           <p className="page-subtitle">
-            Отслеживайте свой прогресс и открывайте новые этапы
+            {isEditable
+              ? "Отмечайте прогресс сотрудника и контролируйте прохождение этапов"
+              : "Отслеживайте свой прогресс и открывайте новые этапы"}
           </p>
         </div>
 
         <div className="timeline">
-          {stages.map((stage) => (
-            <div key={stage.id} className={`timeline-stage ${stage.status}`}>
-              {/* Индикатор на таймлайне */}
-              <div className="stage-node">
-                {stage.status === "completed" && (
-                  <Check size={14} strokeWidth={3} />
-                )}
-              </div>
+          {stages.map((stage) => {
+            const isCompleted = stage.status === "completed";
+            const isExpanded = expandedStages.has(stage.id);
+            // Показываем контент если этап не завершен ИЛИ если он раскрыт вручную
+            const showContent = !isCompleted || isExpanded;
 
-              {/* Заголовок этапа */}
-              <div className="stage-header">
-                <div className="stage-title-wrap">
-                  <span className="stage-status">
-                    {stage.status === "completed"
-                      ? "Выполнено"
-                      : stage.status === "in-progress"
-                        ? "В процессе"
-                        : "Впереди"}
-                  </span>
-                  <h3>{stage.title}</h3>
-                  <p className="widget-subtitle">{stage.duration}</p>
-                </div>
-              </div>
+            return (
+              <div key={stage.id} className={`timeline-stage ${stage.status}`}>
+                {/* Индикатор на таймлайне */}
+                <div className="stage-node"></div>
 
-              {/* Карточка с задачами */}
-              <div className="widget">
-                <div className="task-list">
-                  {stage.tasks.map((task) => (
-                    <div key={task.id} className="task-item">
-                      <div
-                        className={`task-checkbox ${task.isCompleted ? "checked" : ""}`}
-                        onClick={() => toggleTask(stage.id, task.id)}
-                      >
-                        {task.isCompleted && (
-                          <Check size={14} strokeWidth={3} />
-                        )}
-                      </div>
-                      <div className="task-info">
-                        <h4>{task.title}</h4>
-                        {task.description && <p>{task.description}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Контрольная точка (Milestone) */}
-              <div className="milestone-block">
+                {/* Заголовок этапа */}
                 <div
-                  className={`badge-icon ${stage.status === "completed" ? "gold" : stage.status === "in-progress" ? "blue" : "locked"}`}
-                  style={{ width: 48, height: 48 }}
+                  className={`stage-header ${isCompleted ? "collapsible" : ""}`}
+                  onClick={() => isCompleted && toggleStageCollapse(stage.id)}
                 >
-                  {stage.status === "upcoming" ? (
-                    <Lock size={20} />
-                  ) : stage.status === "completed" ? (
-                    <Award size={24} />
-                  ) : (
-                    <Target size={24} />
+                  <div className="stage-title-wrap">
+                    <span className="stage-status">
+                      {stage.status === "completed"
+                        ? "Выполнено"
+                        : stage.status === "in-progress"
+                          ? "В процессе"
+                          : "Впереди"}
+                    </span>
+                    <h3>{stage.title}</h3>
+                    <p className="widget-subtitle">{stage.duration}</p>
+                  </div>
+
+                  {isCompleted && (
+                    <div className="collapse-icon">
+                      {isExpanded ? (
+                        <ChevronUp size={20} />
+                      ) : (
+                        <ChevronDown size={20} />
+                      )}
+                    </div>
                   )}
                 </div>
-                <div className="milestone-info" style={{ flex: 1 }}>
-                  <h4>{stage.milestone.title}</h4>
-                  <p>{stage.milestone.description}</p>
-                </div>
-                {stage.status === "upcoming" && (
-                  <div
-                    className="task-tag"
-                    style={{
-                      background: "var(--nau-light-gray)",
-                      color: "var(--nau-gray)",
-                    }}
-                  >
-                    Заблокировано
+
+                {/* Скрываемый контент */}
+                {showContent && (
+                  <div className="stage-content">
+                    <div className="widget task-widget">
+                      <div className="task-list">
+                        {stage.tasks.map((task) => {
+                          const isTaskDisabled =
+                            !isEditable ||
+                            stage.status === "completed" ||
+                            stage.status === "upcoming";
+
+                          return (
+                            <div
+                              key={task.id}
+                              className={`task-item ${isTaskDisabled ? "disabled-item" : ""}`}
+                            >
+                              <div
+                                className={`task-checkbox ${task.isCompleted ? "checked" : ""} ${isTaskDisabled ? "disabled" : ""}`}
+                                onClick={() =>
+                                  toggleTask(stage.id, task.id, stage.status)
+                                }
+                              />
+                              <div className="task-info">
+                                <h4
+                                  style={{
+                                    textDecoration: task.isCompleted
+                                      ? "line-through"
+                                      : "none",
+                                    color: task.isCompleted
+                                      ? "var(--nau-gray)"
+                                      : "var(--nau-dark)",
+                                  }}
+                                >
+                                  {task.title}
+                                </h4>
+                                {task.description && <p>{task.description}</p>}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="milestone-block">
+                      <div
+                        className={`badge-icon ${stage.status === "completed" ? "gold" : stage.status === "in-progress" ? "blue" : "locked"}`}
+                        style={{ width: 48, height: 48 }}
+                      >
+                        {stage.status === "upcoming" ? (
+                          <Lock size={20} />
+                        ) : stage.status === "completed" ? (
+                          <Award size={24} />
+                        ) : (
+                          <Target size={24} />
+                        )}
+                      </div>
+                      <div className="milestone-info">
+                        <h4>{stage.milestone.title}</h4>
+                        <p>{stage.milestone.description}</p>
+                      </div>
+                      {stage.status === "upcoming" && (
+                        <div
+                          className="task-tag"
+                          style={{
+                            background: "var(--nau-border)",
+                            color: "var(--nau-gray)",
+                          }}
+                        >
+                          Заблокировано
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
-    </>
+    </div>
   );
 };
-
-export default PlanPage;

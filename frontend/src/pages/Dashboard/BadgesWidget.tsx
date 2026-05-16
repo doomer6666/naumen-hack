@@ -21,7 +21,7 @@ const BadgesWidget: React.FC = () => {
       <div className="widget-title">
         Ваши достижения
         <a
-          href="#"
+          href="/achievements"
           style={{
             fontSize: "13px",
             color: "var(--nau-orange)",
