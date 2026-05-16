@@ -22,6 +22,7 @@
   color: var(--nau-dark);
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .hr-icon-btn-lg:hover {
@@ -64,7 +65,6 @@
   cursor: grab;
 }
 
-/* Стили для Drag-and-Drop */
 .hr-stage-card.dragging {
   opacity: 0.5;
   border: 1px dashed var(--nau-orange);
@@ -75,8 +75,8 @@
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  cursor: pointer;
   gap: 12px;
+  cursor: pointer;
   transition: background 0.2s ease;
 }
 
@@ -91,13 +91,28 @@
 }
 
 .hr-stage-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   flex: 1;
+  /* Не даем растягивать внутренние элементы */
+  align-items: flex-start; 
 }
 
-.hr-stage-info h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--nau-dark);
+.hr-stage-subtitle {
+  font-size: 13px;
+  font-weight: normal;
+  color: var(--nau-gray);
+  padding-left: 5px; 
+}
+
+.hr-chevron-btn {
+  display: flex;
+  align-items: center;
+  color: var(--nau-gray);
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
 .hr-stage-actions {
@@ -108,7 +123,7 @@
 }
 
 .hr-stage-content {
-  padding: 8px 20px 20px 20px;
+  padding: 0 20px 20px 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -125,7 +140,6 @@
   cursor: grab;
 }
 
-/* Стили для Drag-and-Drop задач */
 .hr-task-card.dragging {
   opacity: 0.5;
   border: 1px dashed var(--nau-orange);
@@ -148,20 +162,99 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.hr-task-title {
-  font-size: 14px;
-  color: var(--nau-dark);
-  font-weight: 500;
+  gap: 16px;
 }
 
 .hr-task-meta {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-shrink: 0;
 }
 
+/* --- Inline Editable Inputs --- */
+.hr-editable-input {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  outline: none;
+  font-family: var(--font-main);
+  color: var(--nau-dark);
+  transition: all 0.2s ease;
+  padding: 2px 4px;
+}
+
+.hr-editable-input:hover {
+  border-color: var(--nau-border);
+}
+
+.hr-editable-input:focus {
+  border-color: var(--nau-orange);
+  background: var(--nau-white);
+}
+
+.hr-editable-stage-title {
+  font-size: 16px;
+  font-weight: 600;
+  width: auto; /* Сжимается до размера текста */
+  flex: none;  /* Не растягивается флексом */
+  min-width: 40px;
+}
+
+.hr-editable-task-title {
+  font-size: 14px;
+  font-weight: 500;
+  width: auto;
+  flex: none;
+  min-width: 40px;
+}
+
+.hr-editable-tag-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffeae0;
+  color: var(--nau-orange);
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hr-editable-deadline {
+  color: var(--nau-orange);
+  font-size: 12px;
+  font-weight: 600;
+  width: 60px; /* Фиксированная ширина как было */
+  text-align: center;
+  padding: 0;
+}
+
+.hr-editable-deadline:hover, .hr-editable-deadline:focus {
+  background: #ffdcc8;
+}
+
+.hr-jira-tag {
+  background: #e3eafc !important;
+  color: #3b82f6 !important;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hr-editable-jira {
+  color: #3b82f6;
+  font-size: 12px;
+  font-weight: 600;
+  width: 70px; /* Фиксированная ширина как было */
+  padding: 0;
+}
+
+.hr-editable-jira:hover, .hr-editable-jira:focus {
+  background: #c9dff9;
+}
+
+/* Buttons */
 .hr-add-task-btn {
   display: flex;
   align-items: center;
@@ -217,9 +310,33 @@
   padding: 4px;
   border-radius: 4px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
 }
 
 .hr-icon-btn:hover {
-  color: var(--nau-orange);
-  background: var(--nau-orange-light);
+  color: var(--danger);
+  background: #fde8e8;
+}
+
+.hr-btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--nau-orange);
+  color: var(--nau-white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-main);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.hr-btn-primary:hover {
+  background: var(--nau-orange-hover);
+  transform: translateY(-1px);
 }

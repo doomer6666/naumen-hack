@@ -57,14 +57,11 @@ const HrTemplateEditor: React.FC = () => {
     },
   ]);
 
-  // Состояния для Drag-and-Drop
   const [draggedStageId, setDraggedStageId] = useState<string | null>(null);
   const [draggedTaskInfo, setDraggedTaskInfo] = useState<{ stageId: string; taskId: string } | null>(null);
 
   const toggleStage = (stageId: string) => {
-    setStages(stages.map(s => 
-      s.id === stageId ? { ...s, isOpen: !s.isOpen } : s
-    ));
+    setStages(stages.map(s => s.id === stageId ? { ...s, isOpen: !s.isOpen } : s));
   };
 
   const addStage = () => {
@@ -83,13 +80,33 @@ const HrTemplateEditor: React.FC = () => {
       title: 'Новая задача',
       deadline: 'Day 1'
     };
-    setStages(stages.map(s => 
-      s.id === stageId ? { ...s, tasks: [...s.tasks, newTask] } : s
-    ));
+    setStages(stages.map(s => s.id === stageId ? { ...s, tasks: [...s.tasks, newTask] } : s));
   };
 
-  // --- Логика перетаскивания этапов ---
+  const updateStageTitle = (stageId: string, newTitle: string) => {
+    setStages(stages.map(s => s.id === stageId ? { ...s, title: newTitle } : s));
+  };
+
+  const updateTaskField = (stageId: string, taskId: string, field: keyof Task, value: string) => {
+    setStages(stages.map(s => s.id === stageId ? {
+      ...s,
+      tasks: s.tasks.map(t => t.id === taskId ? { ...t, [field]: value } : t)
+    } : s));
+  };
+
+  const deleteStage = (stageId: string) => {
+    setStages(stages.filter(s => s.id !== stageId));
+  };
+
+  const deleteTask = (stageId: string, taskId: string) => {
+    setStages(stages.map(s => s.id === stageId ? { ...s, tasks: s.tasks.filter(t => t.id !== taskId) } : s));
+  };
+
+  // Блокировка перетаскивания, если пользователь редактирует текст
+  const isEditing = () => (document.activeElement as HTMLElement)?.tagName === 'INPUT';
+
   const handleStageDragStart = (e: React.DragEvent<HTMLDivElement>, stageId: string) => {
+    if (isEditing()) { e.preventDefault(); return; }
     setDraggedStageId(stageId);
     e.dataTransfer.effectAllowed = 'move';
   };
@@ -102,23 +119,20 @@ const HrTemplateEditor: React.FC = () => {
   const handleStageDrop = (e: React.DragEvent<HTMLDivElement>, targetStageId: string) => {
     e.preventDefault();
     if (!draggedStageId || draggedStageId === targetStageId) return;
-
     const updatedStages = [...stages];
     const draggedIndex = updatedStages.findIndex(s => s.id === draggedStageId);
     const targetIndex = updatedStages.findIndex(s => s.id === targetStageId);
-
     const [removed] = updatedStages.splice(draggedIndex, 1);
     updatedStages.splice(targetIndex, 0, removed);
-
     setStages(updatedStages);
     setDraggedStageId(null);
   };
 
-  // --- Логика перетаскивания задач ---
   const handleTaskDragStart = (e: React.DragEvent<HTMLDivElement>, stageId: string, taskId: string) => {
+    if (isEditing()) { e.preventDefault(); return; }
     setDraggedTaskInfo({ stageId, taskId });
     e.dataTransfer.effectAllowed = 'move';
-    e.stopPropagation(); // Чтобы не сработал drag этапа
+    e.stopPropagation();
   };
 
   const handleTaskDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -131,19 +145,14 @@ const HrTemplateEditor: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
     if (!draggedTaskInfo || (draggedTaskInfo.stageId === targetStageId && draggedTaskInfo.taskId === targetTaskId)) return;
-
     const updatedStages = [...stages].map(s => ({ ...s, tasks: [...s.tasks] }));
     const sourceStage = updatedStages.find(s => s.id === draggedTaskInfo.stageId);
     const targetStage = updatedStages.find(s => s.id === targetStageId);
-
     if (!sourceStage || !targetStage) return;
-
     const draggedTaskIndex = sourceStage.tasks.findIndex(t => t.id === draggedTaskInfo.taskId);
     const [draggedTask] = sourceStage.tasks.splice(draggedTaskIndex, 1);
-
     const targetTaskIndex = targetStage.tasks.findIndex(t => t.id === targetTaskId);
     targetStage.tasks.splice(targetTaskIndex, 0, draggedTask);
-
     setStages(updatedStages);
     setDraggedTaskInfo(null);
   };
@@ -159,6 +168,7 @@ const HrTemplateEditor: React.FC = () => {
           value={templateName}
           onChange={(e) => setTemplateName(e.target.value)}
           className="hr-editor-title-input"
+          onMouseDown={(e) => e.stopPropagation()}
         />
         <button className="hr-btn-primary">
           <Save size={18} />
@@ -177,18 +187,28 @@ const HrTemplateEditor: React.FC = () => {
             onDrop={(e) => handleStageDrop(e, stage.id)}
           >
             <div className="hr-stage-header" onClick={() => toggleStage(stage.id)}>
-              <div className="hr-stage-drag">
+              <div className="hr-stage-drag" onMouseDown={(e) => e.stopPropagation()}>
                 <GripVertical size={20} color="var(--nau-gray)" />
               </div>
               <div className="hr-stage-info">
-                <h3>{stage.title}</h3>
-                <span className="widget-subtitle">{stage.tasks.length} задач</span>
+                <input 
+                  type="text"
+                  value={stage.title}
+                  onChange={(e) => updateStageTitle(stage.id, e.target.value)}
+                  className="hr-editable-input hr-editable-stage-title"
+                  size={Math.max(stage.title.length, 5)}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <span className="hr-stage-subtitle">{stage.tasks.length} задач</span>
               </div>
               <div className="hr-stage-actions">
-                <button className="hr-icon-btn" onClick={(e) => { e.stopPropagation(); }}>
+                <button className="hr-icon-btn" onClick={(e) => { e.stopPropagation(); deleteStage(stage.id); }}>
                   <Trash2 size={16} />
                 </button>
-                {stage.isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                <div className="hr-chevron-btn">
+                  {stage.isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </div>
               </div>
             </div>
 
@@ -207,21 +227,40 @@ const HrTemplateEditor: React.FC = () => {
                       <GripVertical size={16} color="var(--nau-gray)" />
                     </div>
                     <div className="hr-task-content">
-                      <span className="hr-task-title">{task.title}</span>
+                      <input 
+                        type="text"
+                        value={task.title}
+                        onChange={(e) => updateTaskField(stage.id, task.id, 'title', e.target.value)}
+                        className="hr-editable-input hr-editable-task-title"
+                        size={Math.max(task.title.length, 5)}
+                        onMouseDown={(e) => e.stopPropagation()}
+                      />
                       <div className="hr-task-meta">
-                        <span className="task-tag today-tag">
-                          <Calendar size={12} style={{ marginRight: '4px' }} />
-                          {task.deadline}
-                        </span>
+                        <div className="hr-editable-tag-wrapper">
+                          <Calendar size={12} style={{ flexShrink: 0 }} />
+                          <input 
+                            type="text"
+                            value={task.deadline}
+                            onChange={(e) => updateTaskField(stage.id, task.id, 'deadline', e.target.value)}
+                            className="hr-editable-input hr-editable-deadline"
+                            onMouseDown={(e) => e.stopPropagation()}
+                          />
+                        </div>
                         {task.jiraTemplate && (
-                          <span className="task-tag" style={{ background: '#e3eafc', color: '#3b82f6' }}>
-                            <Link size={12} style={{ marginRight: '4px' }} />
-                            Jira: {task.jiraTemplate}
+                          <span className="task-tag hr-jira-tag">
+                            <Link size={12} />
+                            <input 
+                              type="text"
+                              value={task.jiraTemplate}
+                              onChange={(e) => updateTaskField(stage.id, task.id, 'jiraTemplate', e.target.value)}
+                              className="hr-editable-input hr-editable-jira"
+                              onMouseDown={(e) => e.stopPropagation()}
+                            />
                           </span>
                         )}
                       </div>
                     </div>
-                    <button className="hr-icon-btn">
+                    <button className="hr-icon-btn" onClick={() => deleteTask(stage.id, task.id)}>
                       <Trash2 size={14} />
                     </button>
                   </div>
