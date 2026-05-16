@@ -1,0 +1,142 @@
+.hr-templates {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hr-templates-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hr-btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--nau-orange);
+  color: var(--nau-white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hr-btn-primary:hover {
+  background: var(--nau-orange-hover);
+  transform: translateY(-1px);
+}
+
+.hr-templates-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--nau-light-gray);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.hr-templates-search:focus-within {
+  border-color: var(--nau-orange);
+  background: var(--nau-white);
+}
+
+.hr-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  color: var(--nau-dark);
+  width: 100%;
+  font-family: var(--font-main);
+}
+
+.hr-input::placeholder {
+  color: var(--nau-gray);
+}
+
+.hr-template-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hr-template-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--nau-light-gray);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hr-template-item:hover {
+  background: var(--nau-white);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.hr-template-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--nau-orange-light);
+  color: var(--nau-orange);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hr-template-info {
+  flex: 1;
+}
+
+.hr-template-info h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--nau-dark);
+  margin-bottom: 6px;
+}
+
+.hr-template-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hr-template-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hr-icon-btn {
+  background: none;
+  border: none;
+  color: var(--nau-gray);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.hr-icon-btn:hover {
+  color: var(--nau-orange);
+  background: var(--nau-orange-light);
+}
+
+.hr-empty-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--nau-gray);
+  font-size: 15px;
+}

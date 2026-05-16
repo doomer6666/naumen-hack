@@ -7,6 +7,9 @@ import PlaceholderPage from "./pages/PlaceholderPage";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import { PlanPage } from "./pages/Plan/Plan";
 import { DirectoryPage } from "./pages/Directory/Directory";
+import HrDashboard from "./pages/Hr/HrDashboard";
+import HrTemplates from "./pages/Hr/HrTemplates";
+import HrTemplateEditor from "./pages/Hr/HrTemplateEditor";
 
 const App: React.FC = () => {
   return (
@@ -25,11 +28,11 @@ const App: React.FC = () => {
             <Route path="/feedback" element={<PlaceholderPage />} />
 
             {/*HR*/}
-            <Route path="/hr/dashboard" element={<PlaceholderPage />} />
-            <Route path="/hr/templates" element={<PlaceholderPage />} />
+            <Route path="/hr/dashboard" element={<HrDashboard />} />
+            <Route path="/hr/templates" element={<HrTemplates />} />
             <Route
               path="/hr/templates/:id/edit"
-              element={<PlaceholderPage />}
+              element={<HrTemplateEditor />}
             />
             <Route path="/hr/employees" element={<PlaceholderPage />} />
             <Route
