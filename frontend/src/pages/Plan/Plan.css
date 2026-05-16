@@ -252,3 +252,47 @@
     color: var(--nau-gray);
     margin-top: 2px;
 }
+
+.hr-editor-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.hr-icon-btn-lg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--nau-border);
+    background: var(--nau-white);
+    color: var(--nau-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hr-icon-btn-lg:hover {
+    border-color: var(--nau-orange);
+    color: var(--nau-orange);
+    background: var(--nau-orange-light);
+}
+
+.hr-emp-plan-title {
+    display: flex;
+    gap: 16px;
+    flex: 1;
+    align-items: baseline;
+}
+
+.hr-emp-plan-title .page-title {
+    margin: 0;
+}
+
+.mentee-plan-stages {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}

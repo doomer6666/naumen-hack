@@ -45,10 +45,7 @@ const App: React.FC = () => {
               element={<HrTemplateEditor />}
             />
             <Route path="/hr/employees" element={<HrEmployees />} />
-            <Route
-              path="/hr/employees/:id/plan"
-              element={<HrEmployeePlan />}
-            />
+            <Route path="/hr/employees/:id/plan" element={<HrEmployeePlan />} />
             <Route path="/hr/feedbacks" element={<HrFeedbacks />} />
             <Route path="/hr/integrations" element={<PlaceholderPage />} />
             <Route path="/hr/settings" element={<PlaceholderPage />} />
@@ -57,7 +54,7 @@ const App: React.FC = () => {
             <Route path="/mentor/my-mentees" element={<MenteesList />} />
             <Route
               path="/mentor/my-mentees/:id/progress"
-              element={<MenteeProgress />}
+              element={<PlanPage />}
             />
           </Route>
 

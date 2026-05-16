@@ -1,7 +1,15 @@
 import React, { useState } from "react";
-import { Lock, Award, Target, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Lock,
+  Award,
+  Target,
+  ChevronDown,
+  ChevronUp,
+  ArrowLeft,
+} from "lucide-react";
 import "./Plan.css";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface Task {
   id: string;
@@ -90,7 +98,9 @@ const initialStages: PlanStage[] = [
 ];
 
 export const PlanPage: React.FC = () => {
-  const { role } = useAuth();
+  // const { role } = useAuth();
+  const role = "mentor";
+  const navigate = useNavigate();
   // Редактировать могут только наставники или HR
   const isEditable = role === "mentor" || role === "hr";
 
@@ -140,16 +150,34 @@ export const PlanPage: React.FC = () => {
   };
 
   return (
-    <div className="main-content">
+    <>
       <div className="plan-container">
-        <div className="plan-header">
-          <h1 className="page-title">План адаптации</h1>
-          <p className="page-subtitle">
-            {isEditable
-              ? "Отмечайте прогресс сотрудника и контролируйте прохождение этапов"
-              : "Отслеживайте свой прогресс и открывайте новые этапы"}
-          </p>
-        </div>
+        {!isEditable ? (
+          <div className="plan-header">
+            <h1 className="page-title">План адаптации</h1>
+            <p className="page-subtitle">
+              "Отслеживайте свой прогресс и открывайте новые этапы"
+            </p>
+          </div>
+        ) : (
+          <div className="hr-editor-header">
+            <button
+              className="hr-icon-btn-lg"
+              onClick={() => navigate("/mentor/my-mentees")}
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <div className="hr-emp-plan-title">
+              <h1 className="page-title">Алексей Смирнов</h1>
+              <span
+                className="task-tag status-delayed"
+                style={{ alignSelf: "center" }}
+              >
+                Отстает
+              </span>
+            </div>
+          </div>
+        )}
 
         <div className="timeline">
           {stages.map((stage) => {
@@ -270,6 +298,6 @@ export const PlanPage: React.FC = () => {
           })}
         </div>
       </div>
-    </div>
+    </>
   );
 };
