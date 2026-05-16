@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"nau/auth/config"
+	jwtfactory "nau/auth/internal/adapter/JWTFactory"
 	"nau/auth/internal/adapter/postgres"
 	"nau/auth/internal/controllers/http"
 	"nau/auth/internal/usecase"
@@ -41,17 +42,23 @@ func AppRun(ctx context.Context, c config.Config) error {
 
 	fmt.Println("postgres init successully")
 
+	// init jwtfactory
+	jwtFactory, err := jwtfactory.NewJWTFactory(ctx, c.JWTFactory)
+	if err != nil {
+		return fmt.Errorf("unable to init jwtfactory: %w", err)
+	}
+
 	// init usecase
-	userService, err := usecase.NewUserService(pgPool)
+	userService, err := usecase.NewUserService(pgPool, jwtFactory)
 	if err != nil {
 		return fmt.Errorf("unable to create usecase")
 	}
+
 	// init router
 	router := http.Router(userService)
 	httpServer := httpserver.New(&router, c.HTTP)
 
-	err = httpServer.Start()
-	if err != nil {
+	if err := httpServer.Start(); err != nil {
 		panic(err)
 	}
 	// Приложение запущено и готово к работе
@@ -66,4 +73,3 @@ func AppRun(ctx context.Context, c config.Config) error {
 
 	return nil
 }
-
