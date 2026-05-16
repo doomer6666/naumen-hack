@@ -60,10 +60,21 @@
     transition: all 0.3s ease;
 }
 
+/* Отрисовка галочки для выполненного этапа внутри кружка */
 .timeline-stage.completed .stage-node {
     background-color: var(--success);
     border-color: var(--success);
-    color: var(--nau-white);
+}
+
+.timeline-stage.completed .stage-node::after {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 10px;
+    border: solid var(--nau-white);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
 }
 
 .timeline-stage.in-progress .stage-node {
@@ -82,7 +93,19 @@
 .stage-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: flex-start;
+    padding: 8px;
+    margin-left: -8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.stage-header.collapsible {
+    cursor: pointer;
+}
+
+.stage-header.collapsible:hover {
+    background-color: var(--nau-light-gray);
 }
 
 .stage-title-wrap h3 {
@@ -97,6 +120,8 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 4px;
 }
 
 .timeline-stage.completed .stage-status {
@@ -111,19 +136,91 @@
     color: var(--nau-gray);
 }
 
-.task-checkbox.checked {
-    background-color: var(--nau-orange);
-    border-color: var(--nau-orange);
-    color: var(--nau-white);
+.collapse-icon {
+    color: var(--nau-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
 }
 
-.timeline-stage.upcoming .widget {
+.stage-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.task-widget {
+    padding: 16px;
+    box-shadow: none;
+}
+
+/* === ЧЕКБОКС С ГАЛОЧКОЙ === */
+.task-checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid var(--nau-border);
+    background: var(--nau-white);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.task-checkbox:not(.disabled):hover {
+    border-color: var(--nau-orange);
+}
+
+.task-checkbox.checked {
+    background-color: var(--success);
+    border-color: var(--success);
+}
+
+/* Отрисовка белой галочки внутри */
+.task-checkbox.checked::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 9px;
+    border: solid var(--nau-white);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+/* Состояния Disabled для чекбокса */
+.task-checkbox.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Непрозрачность для неактивных задач */
+.disabled-item .task-info {
+    opacity: 0.8;
+}
+
+.timeline-stage.upcoming .stage-content {
     opacity: 0.6;
     pointer-events: none;
 }
 
 .milestone-block {
-    margin-top: 16px;
     padding: 16px 24px;
     background: var(--nau-light-gray);
     border-radius: var(--border-radius);
@@ -135,11 +232,12 @@
 }
 
 .timeline-stage.completed .milestone-block {
-    background: var(--nau-orange-light);
-    border: 1px solid var(--nau-orange);
+    background: #e8f7f0;
+    /* Очень светлый зеленый */
+    border: 1px solid var(--success);
 }
 
-.milestone-info flex {
+.milestone-info {
     flex: 1;
 }
 
