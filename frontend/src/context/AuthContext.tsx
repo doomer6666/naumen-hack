@@ -49,8 +49,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         isAuthenticated,
         login,
         logout,
-        userName: "Женя Привет",
-        userInitials: "69",
+        userName: "Царь Пётр",
+        userInitials: "ЦП",
       }}
     >
       {children}
