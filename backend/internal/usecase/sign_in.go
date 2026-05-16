@@ -2,17 +2,16 @@ package usecase
 
 import (
 	"context"
-	"crypto/rsa"
 	"fmt"
 
 	"nau/auth/internal/domain"
 	"nau/auth/internal/dto"
-	"nau/auth/internal/jwt"
+	"nau/auth/internal/ljwt"
 )
 
 // Подумать, как лучше передавать в ф-цию privateKey
 
-func (u *UserService) SignIn(ctx context.Context, input dto.SignInInput, privateKey *rsa.PrivateKey) (dto.SignInOutput, error) {
+func (u *UserService) SignIn(ctx context.Context, input dto.SignInInput) (dto.SignInOutput, error) {
 	const op = "usecase.SignIn"
 
 	var output dto.SignInOutput
@@ -26,18 +25,20 @@ func (u *UserService) SignIn(ctx context.Context, input dto.SignInInput, private
 		return output, fmt.Errorf("wrong password: %s: %w", op, err)
 	}
 
-	accessToken, err := jwt.GenerateAccessToken(
+	privKey := u.jwtFactory.PrivateKey
+
+	accessToken, err := ljwt.GenerateAccessToken(
 		user.ID.String(),
 		user.Role,
 		user.Team,
-		privateKey)
+		privKey)
 	if err != nil {
 		return output, fmt.Errorf("unable to get access token: %s: %w", op, err)
 	}
 
-	refreshToken, err := jwt.GenerateRefreshToken(
+	refreshToken, err := ljwt.GenerateRefreshToken(
 		user.ID.String(),
-		privateKey)
+		privKey)
 	if err != nil {
 		return output, fmt.Errorf("unable to get refresh token: %s: %w", op, err)
 	}

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 
+	jwtfactory "nau/auth/internal/adapter/JWTFactory"
 	"nau/auth/internal/adapter/postgres"
 	"nau/auth/internal/domain"
 
@@ -37,12 +38,14 @@ type Postgres interface {
 }
 
 type UserService struct {
-	postgres Postgres
+	postgres   Postgres
+	jwtFactory *jwtfactory.JWTFactory
 }
 
-func NewUserService(postgres *postgres.Pool) (*UserService, error) {
+func NewUserService(postgres *postgres.Pool, jwtFactory *jwtfactory.JWTFactory) (*UserService, error) {
 	return &UserService{
-		postgres: postgres,
+		postgres:   postgres,
+		jwtFactory: jwtFactory,
 	}, nil
 }
 
@@ -50,3 +53,4 @@ func NewUserService(postgres *postgres.Pool) (*UserService, error) {
 func (u *UserService) ReadUserByID(ctx context.Context, id uuid.UUID) (domain.User, error) {
 	return u.postgres.ReadUserByID(ctx, id)
 }
+
