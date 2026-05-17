@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth, type UserRole } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { LogIn, Shield, Loader2 } from "lucide-react";
 import "./LoginPage.css";
 
