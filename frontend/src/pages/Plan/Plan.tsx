@@ -7,7 +7,6 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowLeft,
-  Send,
   ExternalLink,
   Loader2,
   XCircle,
@@ -382,7 +381,6 @@ export const PlanPage: React.FC = () => {
                                   marginTop: "4px",
                                 }}
                               >
-                                {/* --- СОТРУДНИК --- */}
                                 {!isEditable && !isDone && !isReview && (
                                   <button
                                     className="mood-btn auto-width selected"
@@ -396,10 +394,8 @@ export const PlanPage: React.FC = () => {
                                   >
                                     {processingId === task.id ? (
                                       <Loader2 size={12} className="spinner" />
-                                    ) : (
-                                      <Send size={12} />
-                                    )}{" "}
-                                    На проверку
+                                    ) : null}
+                                    {" "}На проверку
                                   </button>
                                 )}
                                 {!isEditable && isReview && (
@@ -408,7 +404,6 @@ export const PlanPage: React.FC = () => {
                                   </span>
                                 )}
 
-                                {/* --- МЕНТОР / HR --- */}
                                 {isEditable && !isDone && !isReview && (
                                   <span
                                     className="text-sm text-gray"
@@ -418,7 +413,7 @@ export const PlanPage: React.FC = () => {
                                   </span>
                                 )}
                                 {isEditable && isReview && (
-                                  <>
+                                  <div className="mentor-review-controls">
                                     <input
                                       type="text"
                                       placeholder="Комментарий (для доработки)"
@@ -429,91 +424,65 @@ export const PlanPage: React.FC = () => {
                                           [task.id]: e.target.value,
                                         }))
                                       }
-                                      className="hr-input"
-                                      style={{
-                                        fontSize: "13px",
-                                        padding: "6px 8px",
-                                        flex: 1,
-                                        minWidth: "150px",
-                                      }}
+                                      className="hr-input review-input"
                                     />
+                                    <div className="mentor-review-actions">
+                                      <select
+                                        value={selectedBadges[task.id] || ""}
+                                        onChange={(e) =>
+                                          setSelectedBadges((p) => ({
+                                            ...p,
+                                            [task.id]: e.target.value,
+                                          }))
+                                        }
+                                        className="hr-review-select"
+                                      >
+                                        <option value="">Без награды</option>
+                                        {availableBadges.map((b: any) => (
+                                          <option key={b.id} value={b.id}>
+                                            {b.name} (+{b.xp_reward} XP)
+                                          </option>
+                                        ))}
+                                      </select>
 
-                                    <select
-                                      value={selectedBadges[task.id] || ""}
-                                      onChange={(e) =>
-                                        setSelectedBadges((p) => ({
-                                          ...p,
-                                          [task.id]: e.target.value,
-                                        }))
-                                      }
-                                      className="hr-input"
-                                      style={{
-                                        fontSize: "13px",
-                                        padding: "6px 8px",
-                                        maxWidth: "180px",
-                                      }}
-                                    >
-                                      <option value="">Без награды</option>
-                                      {availableBadges.map((b: any) => (
-                                        <option key={b.id} value={b.id}>
-                                          {b.name} (+{b.xp_reward} XP)
-                                        </option>
-                                      ))}
-                                    </select>
-
-                                    <button
-                                      className="mood-btn auto-width selected"
-                                      style={{
-                                        padding: "6px 10px",
-                                        fontSize: "12px",
-                                        gap: "4px",
-                                        background: "var(--success)",
-                                        borderColor: "var(--success)",
-                                        color: "white",
-                                      }}
-                                      onClick={() =>
-                                        handleReview(task.id, "done")
-                                      }
-                                      disabled={processingId === task.id}
-                                    >
-                                      {processingId === task.id ? (
-                                        <Loader2
-                                          size={12}
-                                          className="spinner"
-                                        />
-                                      ) : (
-                                        <Check size={12} />
-                                      )}{" "}
-                                      Принять
-                                    </button>
-                                    <button
-                                      className="mood-btn auto-width"
-                                      style={{
-                                        padding: "6px 10px",
-                                        fontSize: "12px",
-                                        gap: "4px",
-                                        color: "var(--danger)",
-                                        borderColor: "var(--danger)",
-                                      }}
-                                      onClick={() =>
-                                        handleReview(task.id, "pending")
-                                      }
-                                      disabled={processingId === task.id}
-                                    >
-                                      {processingId === task.id ? (
-                                        <Loader2
-                                          size={12}
-                                          className="spinner"
-                                        />
-                                      ) : (
-                                        <XCircle size={12} />
-                                      )}{" "}
-                                      Вернуть
-                                    </button>
-                                  </>
+                                      <button
+                                        className="review-btn accept"
+                                        onClick={() =>
+                                          handleReview(task.id, "done")
+                                        }
+                                        disabled={processingId === task.id}
+                                      >
+                                        {processingId === task.id ? (
+                                          <Loader2
+                                            size={12}
+                                            className="spinner"
+                                          />
+                                        ) : (
+                                          <Check size={12} />
+                                        )}
+                                        Принять
+                                      </button>
+                                      <button
+                                        className="review-btn return"
+                                        onClick={() =>
+                                          handleReview(task.id, "pending")
+                                        }
+                                        disabled={processingId === task.id}
+                                      >
+                                        {processingId === task.id ? (
+                                          <Loader2
+                                            size={12}
+                                            className="spinner"
+                                          />
+                                        ) : (
+                                          <XCircle size={12} />
+                                        )}
+                                        Вернуть
+                                      </button>
+                                    </div>
+                                  </div>
                                 )}
 
-                                {/* --- ВЫПОЛНЕНО --- */}
                                 {isDone && (
                                   <span
                                     className="task-tag"
