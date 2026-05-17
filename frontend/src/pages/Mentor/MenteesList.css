@@ -16,7 +16,6 @@
   gap: 8px;
 }
 
-/* Фикс для поиска на сером фоне */
 .mentees-toolbar .hr-templates-search {
   background: var(--nau-white);
   border: 1px solid var(--nau-border);

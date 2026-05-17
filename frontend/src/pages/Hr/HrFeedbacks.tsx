@@ -39,7 +39,6 @@ const HrFeedbacks: React.FC = () => {
   const negativeCount = feedbacks.filter(f => f.mood === 'negative').length;
 
   const handleActionClick = (fbId: string, action: string) => {
-    // Здесь могла бы быть логика открытия чата или создания встречи
     alert(`Действие: "${action}" для отзыва от ${fbId}`);
     setHandledIds([...handledIds, fbId]);
     setActiveActionId(null);
@@ -156,7 +155,6 @@ const HrFeedbacks: React.FC = () => {
         </div>
       </div>
 
-      {/* Оверлей для закрытия выпадающего меню */}
       {activeActionId && <div className="hr-overlay" onClick={() => setActiveActionId(null)} />}
     </div>
   );

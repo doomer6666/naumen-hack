@@ -87,7 +87,6 @@ const LoginPage: React.FC = () => {
             />
             <label htmlFor="password" className="login-label">Пароль</label>
             
-            {/* Убрано условие password.length > 0, теперь кнопка управляется через CSS */}
             <button
               type="button"
               className="password-toggle"

@@ -30,7 +30,6 @@
     gap: 24px;
 }
 
-/* Успешное состояние */
 .mood-success {
     display: flex;
     flex-direction: column;
@@ -56,7 +55,6 @@
     margin: 0;
 }
 
-/* Форма запроса помощи */
 .mood-help-form {
     margin-top: 24px;
     display: flex;
@@ -89,7 +87,6 @@
     opacity: 0.7;
 }
 
-/* Кнопка отправки */
 .nau-btn-primary {
     background: var(--nau-orange);
     color: var(--nau-white);
@@ -115,7 +112,6 @@
     cursor: not-allowed;
 }
 
-/* Утилиты состояний */
 .mood-btn.disabled {
     opacity: 0.5;
     cursor: not-allowed;

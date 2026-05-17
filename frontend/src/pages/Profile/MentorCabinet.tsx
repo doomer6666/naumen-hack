@@ -295,7 +295,6 @@ export const MentorCabinet: React.FC = () => {
         </div>
       </div>
 
-      {/* Блок Мой вклад */}
       <div className="widget">
         <div className="widget-title">
           Мой вклад

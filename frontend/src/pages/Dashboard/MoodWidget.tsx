@@ -32,7 +32,6 @@ export const MoodWidget: React.FC = () => {
     "loading" | "idle" | "submitting" | "success" | "error"
   >("loading");
 
-  // При загрузке проверяем, отвечал ли уже на этой неделе
   useEffect(() => {
     const checkStatus = async () => {
       try {
@@ -80,7 +79,6 @@ export const MoodWidget: React.FC = () => {
     submitFeedback(mood!.score, helpText);
   };
 
-  // Загрузка
   if (status === "loading") {
     return (
       <div
@@ -97,7 +95,6 @@ export const MoodWidget: React.FC = () => {
     );
   }
 
-  // Успешно отправлено (или уже отправлено ранее)
   if (status === "success") {
     return (
       <div className="widget">
@@ -114,7 +111,6 @@ export const MoodWidget: React.FC = () => {
     );
   }
 
-  // Форма отправки
   return (
     <div className="widget">
       <div className="widget-title">

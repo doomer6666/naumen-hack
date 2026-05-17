@@ -71,24 +71,6 @@ export const EmployeeCabinet: React.FC = () => {
     fetchAllData();
   }, []);
 
-  const toggleTask = async (taskId: string, currentStatus: string) => {
-    if (currentStatus === "done") return;
-    try {
-      await apiClient.patch(`/plans/my/tasks/${taskId}`, { status: "done" });
-      setPlan((prev: any) => ({
-        ...prev,
-        tasks: prev.tasks.map((t: any) =>
-          t.user_task_id === taskId ? { ...t, status: "done" } : t,
-        ),
-      }));
-      // Обновляем геймификацию, чтобы сразу увидеть новый бейдж, если он выдан
-      const gamRes = await apiClient.get("/gamification/my-progress");
-      if (gamRes.data) setGamification(gamRes.data);
-    } catch (err) {
-      console.error("Ошибка обновления задачи:", err);
-    }
-  };
-
   if (loading) {
     return (
       <div

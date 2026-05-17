@@ -9,7 +9,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 24px; /* Отступ между фильтрами и поиском */
+  gap: 24px;
   margin-bottom: 24px;
 }
 
@@ -32,7 +32,7 @@
   font-family: var(--font-main);
   transition: all 0.2s ease;
   position: relative;
-  min-height: 40px; /* Выравнивание высоты */
+  min-height: 40px;
   box-sizing: border-box;
 }
 
@@ -66,14 +66,12 @@
   justify-content: center;
 }
 
-/* Поиск */
 .hr-fb-search {
-  min-height: 40px; /* Выравнивание высоты */
+  min-height: 40px;
   box-sizing: border-box;
-  flex: 0 0 300px; /* Фиксированная ширина */
+  flex: 0 0 300px;
 }
 
-/* List */
 .hr-fb-list {
   display: flex;
   flex-direction: column;
@@ -141,7 +139,6 @@
   margin-bottom: 8px;
 }
 
-/* Кнопка реагирования */
 .hr-fb-action-wrapper {
   position: relative;
   margin-top: 4px;
@@ -178,7 +175,7 @@
 
 .hr-fb-dropdown {
   position: absolute;
-  bottom: calc(100% + 8px); /* Выплывает вверх */
+  bottom: calc(100% + 8px);
   left: 0;
   background: var(--nau-white);
   border: 1px solid var(--nau-border);

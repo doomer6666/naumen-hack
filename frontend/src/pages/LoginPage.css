@@ -35,11 +35,9 @@
   gap: 24px;
 }
 
-/* === Хак для отслеживания автозаполнения === */
 @keyframes onAutoFillStart { from { /**/ } to { /**/ } }
 @keyframes onAutoFillCancel { from { /**/ } to { /**/ } }
 
-/* === Floating Label Input === */
 .input-group {
   position: relative;
   width: 100%;
@@ -51,7 +49,7 @@
   padding: 14px 44px 14px 16px;
   font-size: 16px !important;
   font-family: var(--font-main) !important;
-  line-height: normal !important; /* Изменено с 20px на normal для корректного выравнивания */
+  line-height: normal !important;
   color: var(--nau-dark);
   background: var(--nau-light-gray);
   border: 1px solid var(--nau-border);
@@ -116,7 +114,6 @@
   background: var(--nau-white);
 }
 
-/* === ФИКС АВТОЗАПОЛНЕНИЯ БРАУЗЕРА === */
 .login-input:-webkit-autofill,
 .login-input:-webkit-autofill:hover,
 .login-input:-webkit-autofill:focus,
@@ -125,13 +122,13 @@
 .login-input:-internal-autofill-previewed {
   -webkit-box-shadow: 0 0 0 1000px var(--nau-light-gray) inset !important;
   -webkit-text-fill-color: var(--nau-dark) !important;
-  -webkit-text-size-adjust: 100% !important; /* Фикс мелкого шрифта при автозаполнении */
+  -webkit-text-size-adjust: 100% !important;
   font-size: 16px !important;
   font-family: var(--font-main) !important;
   font-weight: 400 !important;
   line-height: normal !important;
   height: 48px !important;
-  transition: background-color 5000s ease-in-out 0s; /* Убрано font-size 0s, которое ломало рендер */
+  transition: background-color 5000s ease-in-out 0s;
   caret-color: var(--nau-dark);
 }
 
@@ -154,7 +151,6 @@
   background: var(--nau-white);
 }
 
-/* === Кастомная кнопка показать/скрыть пароль === */
 .password-toggle {
   position: absolute;
   right: 12px;
@@ -171,12 +167,10 @@
   border-radius: 4px;
   transition: all 0.2s ease;
   z-index: 2;
-  /* Скрываем кнопку по умолчанию */
   opacity: 0;
   pointer-events: none;
 }
 
-/* Показываем кнопку, если инпут заполнен вручную или через автозаполнение */
 .login-input:not(:placeholder-shown) ~ .password-toggle,
 .login-input:-webkit-autofill ~ .password-toggle {
   opacity: 1;
@@ -188,7 +182,6 @@
   background: rgba(0, 0, 0, 0.05);
 }
 
-/* Состояние ошибки */
 .login-input.error {
   border-color: var(--danger);
   background: #fffcfc;
@@ -216,7 +209,6 @@
   padding-left: 4px;
 }
 
-/* === Кнопки === */
 .login-btn {
   width: 100%;
   display: flex;
@@ -261,7 +253,6 @@
   background: var(--nau-orange-light);
 }
 
-/* === Разделитель === */
 .login-divider {
   width: 100%;
   display: flex;
@@ -284,7 +275,6 @@
   text-transform: lowercase;
 }
 
-/* Анимация загрузки */
 .spin-icon {
   animation: spin 1s linear infinite;
 }

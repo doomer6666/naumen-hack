@@ -13,7 +13,6 @@ const ProgressWidget: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Запрашиваем прогресс и задачи параллельно
         const [gamificationRes, planRes] = await Promise.allSettled([
           apiClient.get("/gamification/my-progress"),
           apiClient.get("/plans/my"),
@@ -26,7 +25,6 @@ const ProgressWidget: React.FC = () => {
 
         if (planRes.status === "fulfilled" && planRes.value.data.tasks) {
           const tasks = planRes.value.data.tasks;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const done = tasks.filter((t: any) => t.status === "done").length;
           const total = tasks.length;
           setTasksCompleted(done);

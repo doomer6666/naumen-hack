@@ -8,8 +8,6 @@ import {
   BarChart2,
   FileText,
   Users,
-  Plug,
-  Settings,
   UserCheck,
   Trophy,
 } from "lucide-react";

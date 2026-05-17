@@ -114,7 +114,6 @@ export const HrEmployees: React.FC = () => {
 
   return (
     <>
-      {/* Основной контент страницы */}
       <div className="hr-employees">
         <div className="hr-employees-header">
           <h1 className="page-title">Управление сотрудниками</h1>
@@ -221,7 +220,6 @@ export const HrEmployees: React.FC = () => {
         </div>
       </div>
 
-      {/* Оверлей и модалка ВЫНЕСЕНЫ за пределы .hr-employees */}
       {isAssignOpen && assigningUser && (
         <>
           <div

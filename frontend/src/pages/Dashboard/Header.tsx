@@ -1,3 +1,4 @@
+// @ts-nocheck
 const Header = ({ title, userName, userRole, userInitials }) => {
   return (
     <header className="header">

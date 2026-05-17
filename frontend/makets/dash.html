@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NAUMEN | Дашборд адаптации</title>
     <style>
-        /* Фирменные переменные NAUMEN */
         :root {
             --nau-orange: #ff6720;
             --nau-orange-hover: #e55a19;
@@ -40,7 +39,6 @@
             min-height: 100vh;
         }
 
-        /* Боковая панель */
         .sidebar {
             width: 260px;
             background-color: var(--nau-white);
@@ -102,7 +100,6 @@
             color: var(--nau-orange);
         }
 
-        /* Основной контент */
         .main-content {
             flex: 1;
             padding: 32px 40px;
@@ -112,7 +109,6 @@
             gap: 24px;
         }
 
-        /* Шапка */
         .header {
             display: flex;
             justify-content: space-between;
@@ -158,7 +154,6 @@
             color: var(--nau-gray);
         }
 
-        /* Приветственный баннер */
         .welcome-banner {
             background: linear-gradient(135deg, #ff8c53 0%, var(--nau-orange) 100%);
             border-radius: var(--border-radius);
@@ -182,7 +177,6 @@
             line-height: 1.5;
         }
 
-        /* Сетка виджетов */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -215,7 +209,6 @@
             color: var(--nau-gray);
         }
 
-        /* Виджет Прогресса */
         .progress-wrapper {
             display: flex;
             align-items: center;
@@ -227,7 +220,6 @@
             width: 130px;
             height: 130px;
             border-radius: 50%;
-            /* 45% прогресса цветом NAUMEN */
             background: conic-gradient(var(--nau-orange) 45%, var(--nau-light-gray) 0);
             display: flex;
             align-items: center;
@@ -268,7 +260,6 @@
             font-size: 15px;
         }
 
-        /* Виджет Настроения */
         .mood-container {
             display: flex;
             flex-direction: column;
@@ -323,7 +314,6 @@
             color: var(--nau-orange);
         }
 
-        /* Виджет Задач */
         .task-list {
             display: flex;
             flex-direction: column;
@@ -389,7 +379,6 @@
             color: #b28c00;
         }
 
-        /* Виджет Бейджей */
         .badges-list {
             display: flex;
             gap: 20px;

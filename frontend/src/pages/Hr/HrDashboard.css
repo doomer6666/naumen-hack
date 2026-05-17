@@ -1,4 +1,3 @@
-/* Добавляем новые переменные для графиков в корень */
 :root {
   --chart-orange-dark: #c44b10;
   --chart-orange-mid: #ff6720;
@@ -59,7 +58,6 @@
   gap: 24px;
 }
 
-/* Mood Chart - 3 оттенка оранжевого */
 .hr-mood-chart {
   display: flex;
   gap: 24px;
@@ -125,7 +123,6 @@
 .hr-legend-dot.neutral { background-color: var(--chart-orange-light); }
 .hr-legend-dot.negative { background-color: var(--chart-orange-dark); }
 
-/* Health Bars - 3 оттенка оранжевого */
 .hr-health-bars {
   display: flex;
   flex-direction: column;
@@ -163,8 +160,6 @@
 .hr-progress-fill.info { background: var(--chart-orange-mid); }
 .hr-progress-fill.muted { background: var(--chart-orange-light); }
 
-/* Risk Widget */
-/* Risk Widget */
 .hr-risk-list {
   display: flex;
   flex-direction: column;
@@ -176,15 +171,14 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px 20px 16px 32px; /* Увеличили отступ слева для полоски */
+  padding: 16px 20px 16px 32px;
   background: var(--nau-light-gray);
   border-radius: 8px;
-  border: 1px solid transparent; /* Убрали жесткий border-left */
+  border: 1px solid transparent;
   transition: all 0.2s ease;
-  overflow: hidden; /* Чтобы свечение не вылезало за края */
+  overflow: hidden;
 }
 
-/* Новая плавающая закругленная полоска */
 .hr-risk-item::before {
   content: '';
   position: absolute;
@@ -192,21 +186,20 @@
   top: 50%;
   transform: translateY(-50%);
   width: 4px;
-  height: 40%; /* Занимает 40% высоты карточки */
-  background-color: var(--nau-orange); /* Оранжевая, как ты и просил */
-  border-radius: 2px; /* Закругленная */
+  height: 40%;
+  background-color: var(--nau-orange);
+  border-radius: 2px;
   transition: all 0.2s ease;
 }
 
-/* Эффекты при наведении */
 .hr-risk-item:hover {
-  background: var(--nau-orange-light); /* Нежный оранжевый фон */
+  background: var(--nau-orange-light);
   border-color: #ffdcc8;
 }
 
 .hr-risk-item:hover::before {
-  height: 60%; /* Полоска вытягивается */
-  box-shadow: 0 0 8px rgba(255, 103, 32, 0.3); /* Появляется мягкое свечение */
+  height: 60%;
+  box-shadow: 0 0 8px rgba(255, 103, 32, 0.3);
 }
 
 .hr-risk-info {

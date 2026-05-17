@@ -12,7 +12,7 @@ import {
   XCircle,
 } from "lucide-react";
 import apiClient from "../../api/client";
-import "./HRCabinet.css"; // Убедись, что стили подключены
+import "./HRCabinet.css";
 
 const getMoodIcon = (score: number) => {
   if (score >= 8)
@@ -117,7 +117,6 @@ export const HRCabinet: React.FC = () => {
         </div>
       </div>
 
-      {/* Обновленный блок Пульс команды */}
       <div className="widget" style={{ gridColumn: "span 2" }}>
         <div className="widget-title">
           Пульс команды

@@ -88,7 +88,6 @@ export const FeedbackPage: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="feedback-form">
-          {/* Секция 1: Настроение (из MoodWidget) */}
           <div className="fb-section">
             <h3 className="fb-question">Как вы себя чувствуете?</h3>
             <div className="fb-mood-buttons">
@@ -114,7 +113,6 @@ export const FeedbackPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Секция 2: Понятность (Слайдер + цветной эмодзи) */}
           <div className="fb-section">
             <h3 className="fb-question">Насколько всё понятно?</h3>
             <div className="fb-clarity-row">
@@ -140,7 +138,6 @@ export const FeedbackPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Секция 3: Доступы */}
           <div className="fb-section">
             <div className="fb-toggle-row" onClick={() => setHasAccess(!hasAccess)}>
               <h3 className="fb-question" style={{ margin: 0 }}>Есть ли нужные доступы?</h3>
@@ -153,7 +150,6 @@ export const FeedbackPage: React.FC = () => {
             </span>
           </div>
 
-          {/* Секция 4: Блокеры */}
           <div className="fb-section">
             <h3 className="fb-question">Что мешает работать?</h3>
             <textarea

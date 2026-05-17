@@ -65,7 +65,6 @@
     font-weight: normal;
 }
 
-/* Линейный Прогресс-бар */
 .xp-progress-wrapper {
     margin-bottom: 12px;
 }
@@ -92,7 +91,6 @@
     text-align: right;
 }
 
-/* Сетка Ачивок */
 .achievements-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

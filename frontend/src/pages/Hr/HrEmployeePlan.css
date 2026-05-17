@@ -54,7 +54,6 @@
   font-family: var(--font-main);
 }
 
-/* Checkbox */
 .hr-checkbox {
   width: 22px;
   height: 22px;
@@ -73,7 +72,6 @@
   border-color: var(--nau-orange);
 }
 
-/* Состояние выполненной задачи */
 .hr-task-card.completed .hr-checkbox {
   background: var(--success);
   border-color: var(--success);
@@ -84,7 +82,6 @@
   color: var(--nau-gray);
 }
 
-/* === Drag & Drop стили (общие с шаблоном, но дублируем для изоляции) === */
 .hr-stage-card {
   background: var(--nau-white);
   border-radius: var(--border-radius);

@@ -95,11 +95,9 @@
   background: var(--nau-light-gray);
   cursor: pointer;
   transition: all 0.2s ease;
-  /* Добавлена прозрачная рамка, чтобы не было скачка размеров при ховере */
   border: 1px solid transparent; 
 }
 
-/* Исправлено мерцание: убран translateY, используется только тень и рамка */
 .hr-template-item:hover {
   background: var(--nau-white);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);

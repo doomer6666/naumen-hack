@@ -1,9 +1,5 @@
--- Для UUID
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- =========================
--- USERS
--- =========================
 CREATE TABLE IF NOT EXISTS Users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -18,9 +14,6 @@ CREATE TABLE IF NOT EXISTS Users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- =========================
--- DEPARTMENTS
--- =========================
 CREATE TABLE IF NOT EXISTS Departments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
@@ -28,9 +21,6 @@ CREATE TABLE IF NOT EXISTS Departments (
     head_user_id UUID
 );
 
--- =========================
--- FK AFTER CREATE
--- =========================
 
 ALTER TABLE Users
 ADD CONSTRAINT fk_users_department
@@ -50,9 +40,6 @@ FOREIGN KEY (head_user_id)
 REFERENCES Users(id)
 ON DELETE SET NULL;
 
--- =========================
--- ONBOARDING TEMPLATES
--- =========================
 CREATE TABLE IF NOT EXISTS Onboarding_Templates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
@@ -62,9 +49,6 @@ CREATE TABLE IF NOT EXISTS Onboarding_Templates (
     is_active BOOLEAN DEFAULT true
 );
 
--- =========================
--- TEMPLATE STAGES
--- =========================
 CREATE TABLE IF NOT EXISTS Template_Stages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     template_id UUID REFERENCES Onboarding_Templates(id) ON DELETE CASCADE,
@@ -74,9 +58,6 @@ CREATE TABLE IF NOT EXISTS Template_Stages (
     end_day INTEGER DEFAULT 0
 );
 
--- =========================
--- TEMPLATE TASKS
--- =========================
 CREATE TABLE IF NOT EXISTS Template_Tasks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     stage_id UUID REFERENCES Template_Stages(id) ON DELETE CASCADE,
@@ -89,9 +70,6 @@ CREATE TABLE IF NOT EXISTS Template_Tasks (
     jira_issue_type VARCHAR(255)
 );
 
--- =========================
--- USER PLANS
--- =========================
 CREATE TABLE IF NOT EXISTS User_Plans (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES Users(id) ON DELETE CASCADE,

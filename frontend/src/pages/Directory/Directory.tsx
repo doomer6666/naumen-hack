@@ -55,7 +55,6 @@ export const DirectoryPage: React.FC = () => {
     fetchDirectory();
   }, []);
 
-  // Динамически достаем список отделов из пришедших данных
   const departments = useMemo(() => {
     const depts = new Set(employees.map((e) => e.department).filter(Boolean));
     return ["Все", ...Array.from(depts)];

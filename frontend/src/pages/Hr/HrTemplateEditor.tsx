@@ -309,8 +309,8 @@ const HrTemplateEditor: React.FC = () => {
               style={{ 
                 width: "50px", 
                 textAlign: "center", 
-                background: "var(--nau-white)", // Белый фон по умолчанию
-                borderColor: "var(--nau-border)" // Легкая рамка, чтобы контур был виден всегда
+                background: "var(--nau-white)",
+                borderColor: "var(--nau-border)"
               }}
             />
             <span className="text-gray text-sm">дней</span>

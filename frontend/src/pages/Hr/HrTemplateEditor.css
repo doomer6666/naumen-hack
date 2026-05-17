@@ -171,7 +171,6 @@
   flex-shrink: 0;
 }
 
-/* --- Inline Editable Inputs --- */
 .hr-editable-input {
   background: transparent;
   border: 1px solid transparent;
@@ -220,7 +219,6 @@
   font-weight: 600;
 }
 
-/* Было 60px, стало 120px */
 .hr-editable-desc {
   color: var(--nau-orange);
   font-size: 12px;
@@ -242,7 +240,6 @@
   gap: 4px;
 }
 
-/* Было 70px, стало 140px */
 .hr-editable-jira {
   color: #3b82f6;
   font-size: 12px;
@@ -255,7 +252,6 @@
   background: #c9dff9;
 }
 
-/* Buttons */
 .hr-add-task-btn {
   display: flex;
   align-items: center;

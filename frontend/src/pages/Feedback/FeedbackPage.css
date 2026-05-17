@@ -6,7 +6,7 @@
 
 .feedback-container > .widget {
   width: 100%;
-  max-width: 760px; /* Чуть шире, чем было */
+  max-width: 760px;
   padding: 32px;
 }
 
@@ -17,7 +17,6 @@
   margin-top: 8px;
 }
 
-/* === Секции === */
 .fb-section {
   display: flex;
   flex-direction: column;
@@ -31,7 +30,6 @@
   margin: 0;
 }
 
-/* === Настроение (Кнопки из MoodWidget) === */
 .fb-mood-buttons {
   display: flex;
   gap: 12px;
@@ -61,12 +59,11 @@
 }
 
 .fb-mood-btn.selected {
-  border-color: var(--nau-orange); /* Перекрывается inline стилем */
+  border-color: var(--nau-orange);
   background: var(--nau-orange-light);
   color: var(--nau-orange);
 }
 
-/* === Понятность (Слайдер + Эмодзи) === */
 .fb-clarity-row {
   display: flex;
   align-items: center;
@@ -114,7 +111,6 @@
   cursor: pointer;
 }
 
-/* Ползунок всегда оранжевый */
 .fb-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -142,7 +138,6 @@
   cursor: pointer;
 }
 
-/* === Тогл (Доступы) === */
 .fb-toggle-row {
   display: flex;
   align-items: center;
@@ -186,7 +181,6 @@
   margin-top: -4px;
 }
 
-/* === Текстовое поле === */
 .fb-textarea {
   width: 100%;
   padding: 12px 16px;
@@ -211,7 +205,6 @@
   background: var(--nau-white);
 }
 
-/* === Кнопка отправки (использует класс nau-btn-primary из Dashboard) === */
 .fb-submit {
   width: auto;
   min-width: 220px;
@@ -224,7 +217,6 @@
   cursor: not-allowed;
 }
 
-/* === Экран успеха (в стиле MoodWidget) === */
 .mood-success {
   display: flex;
   flex-direction: column;

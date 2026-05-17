@@ -11,7 +11,7 @@ import {
   ChevronUp,
   Loader2,
   ExternalLink,
-  Pencil, // Добавлен импорт карандаша
+  Pencil,
 } from "lucide-react";
 import apiClient from "../../api/client";
 import "./HrEmployeePlan.css";
@@ -197,7 +197,7 @@ const HrEmployeePlan: React.FC = () => {
                 className="hr-icon-btn"
                 onClick={() => setIsEditingMentor(true)}
               >
-                <Pencil size={16} /> {/* Заменено на карандаш */}
+                <Pencil size={16} />
               </button>
             </>
           )}

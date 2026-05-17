@@ -1,10 +1,9 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoute"; // Импортируем гарды
+import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoute";
 import AppLayout from "./components/common/AppLayout";
 import LoginPage from "./pages/LoginPage";
-// import PlaceholderPage from "./pages/PlaceholderPage";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import { PlanPage } from "./pages/Plan/Plan";
 import { DirectoryPage } from "./pages/Directory/Directory";
@@ -24,26 +23,18 @@ const App: React.FC = () => {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* === ПУБЛИЧНЫЙ МАРШРУТ === */}
-          {/* Если пользователь авторизован, его не пустит на /login (перекинет на его дашборд) */}
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<LoginPage />} />
           </Route>
 
-          {/* === ЗАЩИЩЕННЫЕ МАРШРУТЫ === */}
-          {/* Проверяем, авторизован ли пользователь вообще. Если нет -> /login */}
           <Route
             element={
               <ProtectedRoute allowedRoles={["newbie", "hr", "mentor"]} />
             }
           >
-            {/* Оборачиваем в AppLayout (сайдбар, хедер и т.д.) */}
             <Route element={<AppLayout />}>
-              {/* Общие страницы (доступны всем авторизованным) */}
               <Route path="/profile" element={<ProfilePage />} />
 
-              {/* --- Сотрудник (newbie) --- */}
-              {/* Допускаем только роль "newbie", остальных кидает на их дашборд */}
               <Route element={<ProtectedRoute allowedRoles={["newbie"]} />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/plan" element={<PlanPage />} />
@@ -52,7 +43,6 @@ const App: React.FC = () => {
                 <Route path="/achievements" element={<AchievementsPage />} />
               </Route>
 
-              {/* --- HR --- */}
               <Route element={<ProtectedRoute allowedRoles={["hr"]} />}>
                 <Route path="/hr/dashboard" element={<HrDashboard />} />
                 <Route path="/hr/templates" element={<HrTemplates />} />
@@ -68,7 +58,6 @@ const App: React.FC = () => {
                 <Route path="/hr/feedbacks" element={<HrFeedbacks />} />
               </Route>
 
-              {/* --- Ментор --- */}
               <Route element={<ProtectedRoute allowedRoles={["mentor"]} />}>
                 <Route path="/mentor/my-mentees" element={<MenteesList />} />
                 <Route
@@ -80,7 +69,6 @@ const App: React.FC = () => {
             </Route>
           </Route>
 
-          {/* Редирект по умолчанию */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
