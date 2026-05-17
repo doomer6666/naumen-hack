@@ -12,14 +12,7 @@ const Dashboard: React.FC = () => {
       <WelcomeBanner />
 
       <div className="dashboard-grid">
-        <ProgressWidget
-          percent={45}
-          tasksCompleted={9}
-          totalTasks={20}
-          coursesCompleted={2}
-          totalCourses={5}
-          daysLeft={14}
-        />
+        <ProgressWidget />
         <MoodWidget />
         <TasksWidget />
         <BadgesWidget />

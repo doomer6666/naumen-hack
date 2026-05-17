@@ -8,50 +8,62 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
+import apiClient from "../../api/client";
 
 interface Mood {
   id: string;
   icon: React.ElementType;
   label: string;
+  score: number;
 }
 
 const moods: Mood[] = [
-  { id: "excellent", icon: Sparkles, label: "Отлично" },
-  { id: "good", icon: Smile, label: "Хорошо" },
-  { id: "normal", icon: Meh, label: "Нормально" },
-  { id: "unclear", icon: Frown, label: "Не очень" },
-  { id: "help", icon: LifeBuoy, label: "Нужна помощь" },
+  { id: "excellent", icon: Sparkles, label: "Отлично", score: 10 },
+  { id: "good", icon: Smile, label: "Хорошо", score: 8 },
+  { id: "normal", icon: Meh, label: "Нормально", score: 5 },
+  { id: "unclear", icon: Frown, label: "Не очень", score: 3 },
+  { id: "help", icon: LifeBuoy, label: "Нужна помощь", score: 1 },
 ];
 
 export const MoodWidget: React.FC = () => {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [helpText, setHelpText] = useState<string>("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "success">(
-    "idle",
-  );
+  const [status, setStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
 
-  const simulateSubmit = () => {
+  const submitFeedback = async (moodScore: number, blockers: string = "") => {
     setStatus("submitting");
-    // Имитация задержки сети
-    setTimeout(() => {
+    try {
+      await apiClient.post("/feedback/submit", {
+        mood_score: moodScore,
+        clarity_score: moodScore >= 5 ? 5 : 2, // Заглушка логики
+        has_access: moodScore > 3,
+        blockers: blockers,
+      });
       setStatus("success");
-    }, 1200);
+    } catch (error) {
+      console.error("Ошибка отправки пульса:", error);
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 2000); // Сбросить ошибку через 2 сек
+    }
   };
 
-  const handleMoodClick = (id: string) => {
+  const handleMoodClick = (mood: Mood) => {
     if (status === "submitting" || status === "success") return;
 
-    setSelectedMood(id);
+    setSelectedMood(mood.id);
 
     // Если это не "Нужна помощь", отправляем сразу
-    if (id !== "help") {
-      simulateSubmit();
+    if (mood.id !== "help") {
+      submitFeedback(mood.score);
     }
   };
 
   const handleHelpSubmit = () => {
     if (!helpText.trim()) return;
-    simulateSubmit();
+    const mood = moods.find((m) => m.id === "help");
+    submitFeedback(mood!.score, helpText);
   };
 
   return (
@@ -63,7 +75,7 @@ export const MoodWidget: React.FC = () => {
 
       {status === "success" ? (
         <div className="mood-success">
-          <CheckCircle2 size={48} className="text-success" />
+          <CheckCircle2 size={48} style={{ color: "var(--success)" }} />
           <h4>Пульс отмечен!</h4>
           <p>Спасибо, хорошего дня</p>
         </div>
@@ -83,7 +95,7 @@ export const MoodWidget: React.FC = () => {
                 <button
                   key={mood.id}
                   className={`mood-btn ${isSelected ? "selected" : ""} ${isDisabled && !isSelected ? "disabled" : ""}`}
-                  onClick={() => handleMoodClick(mood.id)}
+                  onClick={() => handleMoodClick(mood)}
                   disabled={isDisabled}
                 >
                   {isSubmittingThis ? (
@@ -96,6 +108,18 @@ export const MoodWidget: React.FC = () => {
               );
             })}
           </div>
+
+          {status === "error" && (
+            <p
+              style={{
+                color: "var(--danger)",
+                marginTop: "12px",
+                fontSize: "14px",
+              }}
+            >
+              Ошибка отправки. Попробуйте позже.
+            </p>
+          )}
 
           {selectedMood === "help" && (
             <div className="mood-help-form">

@@ -1,27 +1,71 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import apiClient from "../../api/client";
+import { Loader2 } from "lucide-react";
 
-interface ProgressWidgetProps {
-  percent: number;
-  tasksCompleted: number;
-  totalTasks: number;
-  coursesCompleted: number;
-  totalCourses: number;
-  daysLeft: number;
-}
+const ProgressWidget: React.FC = () => {
+  const [percent, setPercent] = useState(0);
+  const [tasksCompleted, setTasksCompleted] = useState(0);
+  const [totalTasks, setTotalTasks] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [xp, setXp] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-const ProgressWidget: React.FC<ProgressWidgetProps> = ({
-  percent,
-  tasksCompleted,
-  totalTasks,
-  coursesCompleted,
-  totalCourses,
-  daysLeft,
-}) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Запрашиваем прогресс и задачи параллельно
+        const [gamificationRes, planRes] = await Promise.allSettled([
+          apiClient.get("/gamification/my-progress"),
+          apiClient.get("/plans/my"),
+        ]);
+
+        if (gamificationRes.status === "fulfilled") {
+          setLevel(gamificationRes.value.data.level || 1);
+          setXp(gamificationRes.value.data.xp || 0);
+        }
+
+        if (planRes.status === "fulfilled" && planRes.value.data.tasks) {
+          const tasks = planRes.value.data.tasks;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const done = tasks.filter((t: any) => t.status === "done").length;
+          const total = tasks.length;
+          setTasksCompleted(done);
+          setTotalTasks(total);
+          setPercent(total > 0 ? Math.round((done / total) * 100) : 0);
+        }
+      } catch (error) {
+        console.error("Ошибка загрузки прогресса:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div
+        className="widget"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "200px",
+        }}
+      >
+        <Loader2 size={32} className="spinner" />
+      </div>
+    );
+  }
+
   return (
     <div className="widget">
       <div className="widget-title">
         Прогресс адаптации
-        <span className="widget-subtitle">Этап 1: Погружение</span>
+        <span className="widget-subtitle">
+          Уровень {level} • {xp} XP
+        </span>
       </div>
       <div className="progress-wrapper">
         <div
@@ -43,13 +87,10 @@ const ProgressWidget: React.FC<ProgressWidgetProps> = ({
             </strong>
           </p>
           <p>
-            Пройдено курсов:{" "}
-            <strong>
-              {coursesCompleted} из {totalCourses}
-            </strong>
+            Накоплено XP: <strong>{xp}</strong>
           </p>
           <p>
-            Дней до конца этапа: <strong>{daysLeft}</strong>
+            Текущий уровень: <strong>{level}</strong>
           </p>
         </div>
       </div>
