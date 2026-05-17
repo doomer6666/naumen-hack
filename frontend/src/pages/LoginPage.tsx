@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { LogIn, Shield, Loader2 } from "lucide-react";
+import { LogIn, Shield, Loader2, Eye, EyeOff } from "lucide-react";
 import "./LoginPage.css";
 
 const LoginPage: React.FC = () => {
@@ -12,11 +12,19 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleAutoFill = (e: React.AnimationEvent<HTMLInputElement>) => {
+    if (e.animationName === "onAutoFillStart") {
+      const target = e.target as HTMLInputElement;
+      if (target.id === "email") setEmail(target.value);
+      if (target.id === "password") setPassword(target.value);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Клиентская валидация домена
     if (!email.endsWith("@naumen.ru")) {
       setError("Допустима только почта домена @naumen.ru");
       return;
@@ -26,16 +34,13 @@ const LoginPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Вызываем API-логин из контекста
       const role = await login(email, password);
       
-      // Редиректим в зависимости от возвращенной роли
       if (role === "hr") navigate("/hr/dashboard");
       else if (role === "mentor") navigate("/mentor/my-mentees");
       else navigate("/dashboard");
       
-    } catch (err) {
-      // Обработка ошибки от сервера (неверный пароль, пользователь не найден и т.д.)
+    } catch {
       setError("Неверная почта или пароль");
     } finally {
       setIsSubmitting(false);
@@ -60,6 +65,7 @@ const LoginPage: React.FC = () => {
                 setEmail(e.target.value);
                 if (error) setError("");
               }}
+              onAnimationStart={handleAutoFill}
               autoComplete="email"
               disabled={isSubmitting}
             />
@@ -69,16 +75,27 @@ const LoginPage: React.FC = () => {
 
           <div className="input-group">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               className="login-input"
               placeholder=" "
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onAnimationStart={handleAutoFill}
               autoComplete="current-password"
               disabled={isSubmitting}
             />
             <label htmlFor="password" className="login-label">Пароль</label>
+            
+            {/* Убрано условие password.length > 0, теперь кнопка управляется через CSS */}
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
           <button type="submit" className="login-btn primary" disabled={isSubmitting}>
