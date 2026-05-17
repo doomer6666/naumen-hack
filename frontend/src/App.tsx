@@ -4,7 +4,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoute"; // Импортируем гарды
 import AppLayout from "./components/common/AppLayout";
 import LoginPage from "./pages/LoginPage";
-import PlaceholderPage from "./pages/PlaceholderPage";
+// import PlaceholderPage from "./pages/PlaceholderPage";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import { PlanPage } from "./pages/Plan/Plan";
 import { DirectoryPage } from "./pages/Directory/Directory";
