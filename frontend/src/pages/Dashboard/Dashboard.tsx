@@ -3,8 +3,8 @@ import WelcomeBanner from "./WelcomeBanner";
 import ProgressWidget from "./ProgressWidget";
 import MoodWidget from "./MoodWidget";
 import TasksWidget from "./TasksWidget";
-import BadgesWidget from "./BadgesWidget";
 import "./Dashboard.css";
+import { AchievementsWidget } from "./AchievementsWidget";
 
 const Dashboard: React.FC = () => {
   return (
@@ -15,7 +15,7 @@ const Dashboard: React.FC = () => {
         <ProgressWidget />
         <MoodWidget />
         <TasksWidget />
-        <BadgesWidget />
+        <AchievementsWidget />
       </div>
     </>
   );

@@ -9,7 +9,10 @@ import {
   getNextFeedback,
   submitFeedback,
 } from "../controllers/feedback.controller";
-import { getMyProgress } from "../controllers/gamification.controller";
+import {
+  getLeaderboard,
+  getMyProgress,
+} from "../controllers/gamification.controller";
 import {
   getAnalytics,
   getTemplates,
@@ -45,6 +48,7 @@ router.post("/feedback/submit", authMiddleware, submitFeedback);
 
 //Gamification
 router.get("/gamification/my-progress", authMiddleware, getMyProgress);
+router.get("/gamification/leaderboard", authMiddleware, getLeaderboard);
 
 //HR Panel
 router.get("/hr/analytics", authMiddleware, getAnalytics);

@@ -41,3 +41,23 @@ export const getMyProgress = async (
     res.status(500).json({ message: "Ошибка получения прогресса" });
   }
 };
+
+export const getLeaderboard = async (
+  _req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  try {
+    const result = await pool.query(
+      `SELECT u.id, u.name, up.total_xp as xp, up.current_level as level
+       FROM Users u
+       LEFT JOIN User_Plans up ON u.id = up.user_id AND up.status = 'in_progress'
+       WHERE u.role = 'newbie'
+       ORDER BY up.total_xp DESC NULLS LAST
+       LIMIT 10`,
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Leaderboard Error:", error);
+    res.status(500).json({ message: "Ошибка получения рейтинга" });
+  }
+};

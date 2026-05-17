@@ -1,4 +1,5 @@
-import React from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect } from "react";
 import {
   Zap,
   Key,
@@ -8,224 +9,225 @@ import {
   Trophy,
   Target,
   Flag,
+  Award,
+  Heart,
+  Rocket,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
+import apiClient from "../../api/client";
+import { useAuth } from "../../context/AuthContext";
 import "./Achievements.css";
 
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  status: "earned" | "locked";
-  styleType: "gold" | "blue" | "locked";
-}
+const iconMap: Record<string, React.ElementType> = {
+  target: Target,
+  heart: Heart,
+  rocket: Rocket,
+  calendar: Calendar,
+  zap: Zap,
+  key: Key,
+  star: Star,
+  flag: Flag,
+};
 
 interface LeaderboardUser {
   id: string;
   name: string;
   level: number;
   xp: number;
-  avatarLetter: string;
-  isCurrentUser?: boolean;
 }
 
-const USER_CURRENT_XP = 850;
-const USER_NEXT_LEVEL_XP = 1000;
-const USER_LEVEL = 3;
-
-const achievementsList: Achievement[] = [
-  {
-    id: "a1",
-    title: "Первый таск",
-    description: "Успешно закрыта первая задача в Jira",
-    icon: <Zap size={28} />,
-    status: "earned",
-    styleType: "gold",
-  },
-  {
-    id: "a2",
-    title: "Мастер доступов",
-    description: "Настроены все рабочие инструменты",
-    icon: <Key size={28} />,
-    status: "earned",
-    styleType: "blue",
-  },
-  {
-    id: "a3",
-    title: "Неделя в компании",
-    description: "Успешно пережита первая рабочая неделя",
-    icon: <Calendar size={28} />,
-    status: "earned",
-    styleType: "gold",
-  },
-  {
-    id: "a4",
-    title: "Звезда команды",
-    description: "Получить первый лайк от ментора",
-    icon: <Star size={28} />,
-    status: "earned",
-    styleType: "blue",
-  },
-  {
-    id: "a5",
-    title: "Месяц с нами",
-    description: "Закрыть испытательный срок первого месяца",
-    icon: <Flag size={28} />,
-    status: "locked",
-    styleType: "locked",
-  },
-  {
-    id: "a6",
-    title: "Первый релиз",
-    description: "Ваш код дошел до продакшена",
-    icon: <Lock size={28} />,
-    status: "locked",
-    styleType: "locked",
-  },
-];
-
-const leaderboardData: LeaderboardUser[] = [
-  { id: "u1", name: "Мария В.", level: 4, xp: 1200, avatarLetter: "М" },
-  {
-    id: "u2",
-    name: "Иван Иванов",
-    level: 3,
-    xp: 850,
-    avatarLetter: "И",
-    isCurrentUser: true,
-  },
-  { id: "u3", name: "Алексей С.", level: 3, xp: 720, avatarLetter: "А" },
-  { id: "u4", name: "Елена К.", level: 2, xp: 450, avatarLetter: "Е" },
-  { id: "u5", name: "Дмитрий П.", level: 1, xp: 120, avatarLetter: "Д" },
-];
-
 export const AchievementsPage: React.FC = () => {
-  const progressPercent = Math.min(
-    (USER_CURRENT_XP / USER_NEXT_LEVEL_XP) * 100,
-    100,
-  );
+  const { userName } = useAuth();
 
-  const earnedCount = achievementsList.filter(
-    (a) => a.status === "earned",
-  ).length;
-  const totalCount = achievementsList.length;
+  const [gamification, setGamification] = useState<any>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [gamRes, lbRes] = await Promise.allSettled([
+          apiClient.get("/gamification/my-progress"),
+          apiClient.get("/gamification/leaderboard"),
+        ]);
+
+        if (gamRes.status === "fulfilled") {
+          setGamification(gamRes.value.data);
+        }
+        if (lbRes.status === "fulfilled") {
+          setLeaderboard(lbRes.value.data);
+        }
+      } catch (err) {
+        console.error("Ошибка загрузки достижений:", err);
+        setError("Не удалось загрузить данные");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div
+        style={{ display: "flex", justifyContent: "center", padding: "80px 0" }}
+      >
+        <Loader2 size={48} className="spinner" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{ textAlign: "center", color: "var(--danger)", padding: "40px" }}
+      >
+        <AlertCircle size={40} /> <p>{error}</p>
+      </div>
+    );
+  }
+
+  const currentXp = gamification?.xp || 0;
+  const currentLevel = gamification?.level || 1;
+  const nextLevelXp = currentLevel * 500;
+  const progressPercent = Math.min((currentXp / nextLevelXp) * 100, 100);
+  const xpRemaining = Math.max(0, nextLevelXp - currentXp);
+
+  const badges = gamification?.badges || [];
+  const earnedCount = badges.filter((b: any) => b.earned).length;
+  const totalCount = badges.length;
 
   return (
-    <>
-      <div className="achievements-container">
-        <div className="achievements-header">
-          <h1 className="page-title">Мои достижения</h1>
-          <p className="page-subtitle">
-            Выполняйте задания, получайте опыт и открывайте награды
-          </p>
-        </div>
+    <div className="achievements-container">
+      <div className="achievements-header">
+        <h1 className="page-title">Мои достижения</h1>
+        <p className="page-subtitle">
+          Выполняйте задания, получайте опыт и открывайте награды
+        </p>
+      </div>
 
-        <div className="achievements-layout">
-          {/* Левая колонка: Прогресс и Бейджи */}
-          <div className="main-column">
-            {/* Виджет Уровня */}
-            <div className="widget">
-              <div className="level-info-header">
-                <div className="level-title">
-                  <span>Текущий ранг</span>
-                  <h2>Уровень {USER_LEVEL}</h2>
-                </div>
-                <div className="xp-counter">
-                  {USER_CURRENT_XP} <span>/ {USER_NEXT_LEVEL_XP} XP</span>
-                </div>
+      <div className="achievements-layout">
+        <div className="main-column">
+          <div className="widget">
+            <div className="level-info-header">
+              <div className="level-title">
+                <span>Текущий ранг</span>
+                <h2>Уровень {currentLevel}</h2>
               </div>
-
-              <div className="xp-progress-wrapper">
-                <div className="xp-bar-track">
-                  <div
-                    className="xp-bar-fill"
-                    style={{ width: `${progressPercent}%` }}
-                  ></div>
-                </div>
-              </div>
-              <div className="xp-hint">
-                Осталось {USER_NEXT_LEVEL_XP - USER_CURRENT_XP} XP до Уровня{" "}
-                {USER_LEVEL + 1}
+              <div className="xp-counter">
+                {currentXp} <span>/ {nextLevelXp} XP</span>
               </div>
             </div>
 
-            {/* Виджет Бейджей */}
-            <div className="widget">
-              <div className="widget-title">
+            <div className="xp-progress-wrapper">
+              <div className="xp-bar-track">
                 <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                  }}
-                >
-                  <Trophy size={20} color="var(--nau-orange)" />
-                  Коллекция бейджей
-                </div>
-                <div
-                  className="task-tag"
-                  style={{ background: "var(--nau-light-gray)" }}
-                >
-                  Собрано {earnedCount} из {totalCount}
-                </div>
+                  className="xp-bar-fill"
+                  style={{ width: `${progressPercent}%` }}
+                ></div>
               </div>
-
-              <div className="achievements-grid">
-                {achievementsList.map((achievement) => (
-                  <div
-                    key={achievement.id}
-                    className={`achievement-card ${achievement.status}`}
-                  >
-                    <div className={`badge-icon ${achievement.styleType}`}>
-                      {achievement.icon}
-                    </div>
-                    <h4 className="badge-title">{achievement.title}</h4>
-                    <p className="badge-desc">{achievement.description}</p>
-                  </div>
-                ))}
-              </div>
+            </div>
+            <div className="xp-hint">
+              Осталось {xpRemaining} XP до Уровня {currentLevel + 1}
             </div>
           </div>
 
-          {/* Правая колонка: Лидерборд */}
           <div className="widget">
             <div className="widget-title">
               <div
                 style={{ display: "flex", alignItems: "center", gap: "8px" }}
               >
-                <Target size={20} color="var(--nau-dark)" />
-                Рейтинг новичков
+                <Trophy size={20} color="var(--nau-orange)" />
+                Коллекция бейджей
+              </div>
+              <div
+                className="task-tag"
+                style={{ background: "var(--nau-light-gray)" }}
+              >
+                Собрано {earnedCount} из {totalCount}
               </div>
             </div>
-            <p className="widget-subtitle" style={{ marginBottom: "16px" }}>
-              Топ сотрудников за текущий месяц
-            </p>
 
-            <div className="leaderboard-list">
-              {leaderboardData
-                .sort((a, b) => b.xp - a.xp)
-                .map((user, index) => (
+            <div className="achievements-grid">
+              {badges.map((badge: any) => {
+                const IconComponent = iconMap[badge.icon_url] || Award;
+                const isEarned = badge.earned;
+
+                return (
+                  <div
+                    key={badge.id}
+                    className={`achievement-card ${isEarned ? "earned" : "locked"}`}
+                  >
+                    <div
+                      className={`badge-icon ${isEarned ? "gold" : "locked"}`}
+                    >
+                      {isEarned ? (
+                        <IconComponent size={28} />
+                      ) : (
+                        <Lock size={28} />
+                      )}
+                    </div>
+                    <h4 className="badge-title">{badge.name}</h4>
+                    <p className="badge-desc">
+                      {isEarned
+                        ? `Награда: +${badge.xp_reward} XP`
+                        : `Награда: +${badge.xp_reward} XP`}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="widget">
+          <div className="widget-title">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <Target size={20} color="var(--nau-dark)" />
+              Рейтинг новичков
+            </div>
+          </div>
+          <p className="widget-subtitle" style={{ marginBottom: "16px" }}>
+            Топ сотрудников за текущий месяц
+          </p>
+
+          <div className="leaderboard-list">
+            {leaderboard.length === 0 ? (
+              <p className="text-gray text-sm text-center">
+                Пока нет данных для рейтинга
+              </p>
+            ) : (
+              leaderboard.map((user, index) => {
+                const isCurrentUser = user.name === userName;
+                const avatarLetter = user.name
+                  ? user.name[0].toUpperCase()
+                  : "?";
+
+                return (
                   <div
                     key={user.id}
-                    className={`leaderboard-item ${user.isCurrentUser ? "current-user" : ""}`}
+                    className={`leaderboard-item ${isCurrentUser ? "current-user" : ""}`}
                   >
                     <div className="rank-number">{index + 1}</div>
                     <div
                       className="avatar"
                       style={
-                        !user.isCurrentUser
-                          ? { background: "var(--nau-gray)" }
-                          : {}
+                        !isCurrentUser ? { background: "var(--nau-gray)" } : {}
                       }
                     >
-                      {user.avatarLetter}
+                      {avatarLetter}
                     </div>
                     <div className="player-info">
                       <span className="player-name">{user.name}</span>
-                      <span className="player-level">Уровень {user.level}</span>
+                      <span className="player-level">
+                        Уровень {user.level || 1}
+                      </span>
                     </div>
                     <div className="player-xp">
-                      {user.xp}{" "}
+                      {user.xp || 0}{" "}
                       <span
                         style={{
                           fontSize: "11px",
@@ -237,12 +239,13 @@ export const AchievementsPage: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                ))}
-            </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
