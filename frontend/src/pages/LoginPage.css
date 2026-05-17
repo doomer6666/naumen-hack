@@ -17,10 +17,8 @@
 }
 
 .login-logo {
-  font-size: 28px;
-  font-weight: 900;
-  color: var(--nau-orange);
-  letter-spacing: 1px;
+  width: auto;
+  height: 30px;
   margin-bottom: 8px;
 }
 

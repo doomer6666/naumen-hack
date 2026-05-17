@@ -50,7 +50,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="login-page-container">
       <div className="widget login-card">
-        <h1 className="login-logo">NAUMEN</h1>
+        <img src="/logo.png" alt="NAUMEN" className="login-logo" />
         <p className="login-subtitle">Система адаптации персонала</p>
 
         <form onSubmit={handleSubmit} className="login-form" noValidate>
