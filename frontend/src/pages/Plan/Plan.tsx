@@ -59,6 +59,11 @@ export const PlanPage: React.FC = () => {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [viewingUserName, setViewingUserName] = useState<string>("");
 
+  const [availableBadges, setAvailableBadges] = useState<any[]>([]);
+  const [selectedBadges, setSelectedBadges] = useState<Record<string, string>>(
+    {},
+  );
+
   useEffect(() => {
     const fetchPlan = async () => {
       try {
@@ -130,7 +135,14 @@ export const PlanPage: React.FC = () => {
       }
     };
     fetchPlan();
-  }, [targetUserId, userName]);
+
+    if (isEditable) {
+      apiClient
+        .get("/badges/available")
+        .then((res) => setAvailableBadges(res.data))
+        .catch(() => {});
+    }
+  }, [targetUserId, userName, isEditable]);
 
   const handleSendToReview = async (taskId: string) => {
     if (processingId) return;
@@ -160,10 +172,13 @@ export const PlanPage: React.FC = () => {
     if (processingId) return;
     setProcessingId(taskId);
     const comment = comments[taskId] || "";
+    const badge_id = selectedBadges[taskId] || null;
+
     try {
       await apiClient.post(`/mentor/tasks/${taskId}/review`, {
         status,
         comment,
+        badge_id,
       });
       setStages((prev) =>
         prev.map((s) => ({
@@ -180,6 +195,11 @@ export const PlanPage: React.FC = () => {
         })),
       );
       setComments((prev) => {
+        const n = { ...prev };
+        delete n[taskId];
+        return n;
+      });
+      setSelectedBadges((prev) => {
         const n = { ...prev };
         delete n[taskId];
         return n;
@@ -356,7 +376,7 @@ export const PlanPage: React.FC = () => {
                               )}
 
                               <div
-                                className="flex-row gap-8 align-center"
+                                className="flex-row gap-8 align-center flex-wrap"
                                 style={{
                                   paddingLeft: "22px",
                                   marginTop: "4px",
@@ -414,8 +434,33 @@ export const PlanPage: React.FC = () => {
                                         fontSize: "13px",
                                         padding: "6px 8px",
                                         flex: 1,
+                                        minWidth: "150px",
                                       }}
                                     />
+
+                                    <select
+                                      value={selectedBadges[task.id] || ""}
+                                      onChange={(e) =>
+                                        setSelectedBadges((p) => ({
+                                          ...p,
+                                          [task.id]: e.target.value,
+                                        }))
+                                      }
+                                      className="hr-input"
+                                      style={{
+                                        fontSize: "13px",
+                                        padding: "6px 8px",
+                                        maxWidth: "180px",
+                                      }}
+                                    >
+                                      <option value="">Без награды</option>
+                                      {availableBadges.map((b: any) => (
+                                        <option key={b.id} value={b.id}>
+                                          {b.name} (+{b.xp_reward} XP)
+                                        </option>
+                                      ))}
+                                    </select>
+
                                     <button
                                       className="mood-btn auto-width selected"
                                       style={{

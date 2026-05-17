@@ -37,6 +37,10 @@ import {
   getPendingReviews,
   reviewTask,
 } from "../controllers/mentor.controller";
+import {
+  getAvailableBadges,
+  getMyBadges,
+} from "../controllers/badge.controller";
 
 const router = Router();
 
@@ -60,6 +64,8 @@ router.post("/feedback/submit", authMiddleware, submitFeedback);
 //Gamification
 router.get("/gamification/my-progress", authMiddleware, getMyProgress);
 router.get("/gamification/leaderboard", authMiddleware, getLeaderboard);
+router.get("/badges/available", authMiddleware, getAvailableBadges);
+router.get("/badges/my", authMiddleware, getMyBadges);
 
 //HR Panel
 router.get("/hr/analytics", authMiddleware, getAnalytics);

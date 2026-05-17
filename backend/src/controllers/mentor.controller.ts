@@ -73,38 +73,88 @@ export const reviewTask = async (
 
     const jiraKey = taskRes.rows[0].jira_issue_key;
 
-    // Формируем запрос без CASE WHEN, чтобы избежать конфликта типов
+    // Обновляем статус задачи
     const dateUpdate = status === "done" ? "NOW()" : "NULL";
     await pool.query(
       `UPDATE User_Tasks SET status = $1, mentor_comment = $2, completed_at = ${dateUpdate} WHERE id = $3`,
       [status, comment || null, taskId],
     );
 
-    if (status === "done") {
-      if (jiraKey) transitionJiraTicket(jiraKey, "Done");
-
-      const planRes = await pool.query(
-        `SELECT user_id FROM User_Plans WHERE id = (SELECT user_plan_id FROM User_Tasks WHERE id = $1)`,
-        [taskId],
-      );
-      const userId = planRes.rows[0]?.user_id;
-      if (userId) {
-        await pool.query(
-          `UPDATE User_Plans SET total_xp = total_xp + 10 WHERE user_id = $1`,
-          [userId],
-        );
-      }
-    } else {
-      if (jiraKey) transitionJiraTicket(jiraKey, "To Do");
-    }
-
+    // ВАЖНО: Отвечаем клиенту СРАЗУ. Дальнейшие действия не должны ломать запрос.
     res.json({
       message:
         status === "done" ? "Задача принята" : "Задача возвращена на доработку",
     });
+
+    // --- ФОНОВАЯ ЛОГИКА (XP, Jira, Ачивки) ---
+    if (status === "done") {
+      try {
+        if (jiraKey) await transitionJiraTicket(jiraKey, "Done");
+
+        const planRes = await pool.query(
+          `SELECT user_id FROM User_Plans WHERE id = (SELECT user_plan_id FROM User_Tasks WHERE id = $1)`,
+          [taskId],
+        );
+        const userId = planRes.rows[0]?.user_id;
+
+        if (userId) {
+          await pool.query(
+            `UPDATE User_Plans SET total_xp = total_xp + 10 WHERE user_id = $1`,
+            [userId],
+          );
+
+          const badgeId = req.body.badge_id;
+          if (badgeId) {
+            await pool.query(
+              `INSERT INTO User_Badges (user_id, badge_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+              [userId, badgeId],
+            );
+            const badgeRes = await pool.query(
+              `SELECT xp_reward FROM Badges WHERE id = $1`,
+              [badgeId],
+            );
+            const bonusXp = badgeRes.rows[0]?.xp_reward || 0;
+            if (bonusXp > 0) {
+              await pool.query(
+                `UPDATE User_Plans SET total_xp = total_xp + $1 WHERE user_id = $2`,
+                [bonusXp, userId],
+              );
+            }
+          }
+
+          // Автоматические ачивки
+          const stats = await pool.query(
+            `SELECT COUNT(*) FILTER (WHERE ut.status = 'done') as done_count, COUNT(*) as total_count
+             FROM User_Tasks ut JOIN User_Plans up ON ut.user_plan_id = up.id WHERE up.user_id = $1`,
+            [userId],
+          );
+          const doneCount = parseInt(stats.rows[0].done_count, 10);
+          const totalCount = parseInt(stats.rows[0].total_count, 10);
+
+          if (doneCount >= 1) {
+            await pool.query(
+              `INSERT INTO User_Badges (user_id, badge_id) VALUES ($1, 'a8a1a3b2-4d2d-4f1a-8c9b-6e2c3d4e5f6a') ON CONFLICT DO NOTHING`,
+              [userId],
+            );
+          }
+          if (doneCount === totalCount && totalCount > 0) {
+            await pool.query(
+              `INSERT INTO User_Badges (user_id, badge_id) VALUES ($1, 'b1c2d3e4-5f6a-4b7c-8d9e-0f1e2d3c4b5a') ON CONFLICT DO NOTHING`,
+              [userId],
+            );
+          }
+        }
+      } catch (bgErr) {
+        console.error("[ФОН] Ошибка начисления XP/ачивок:", bgErr);
+      }
+    } else {
+      if (jiraKey) transitionJiraTicket(jiraKey, "To Do").catch(console.error);
+    }
   } catch (error) {
     console.error("Ошибка ревью задачи:", error);
-    res.status(500).json({ message: "Ошибка ревью задачи" });
+    if (!res.headersSent) {
+      res.status(500).json({ message: "Ошибка ревью задачи" });
+    }
   }
 };
 
