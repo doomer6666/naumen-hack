@@ -95,7 +95,6 @@
   flex-direction: column;
   gap: 4px;
   flex: 1;
-  /* Не даем растягивать внутренние элементы */
   align-items: flex-start; 
 }
 
@@ -196,8 +195,8 @@
 .hr-editable-stage-title {
   font-size: 16px;
   font-weight: 600;
-  width: auto; /* Сжимается до размера текста */
-  flex: none;  /* Не растягивается флексом */
+  width: auto;
+  flex: none;
   min-width: 40px;
 }
 
@@ -221,16 +220,17 @@
   font-weight: 600;
 }
 
-.hr-editable-deadline {
+/* Было 60px, стало 120px */
+.hr-editable-desc {
   color: var(--nau-orange);
   font-size: 12px;
   font-weight: 600;
-  width: 60px; /* Фиксированная ширина как было */
-  text-align: center;
+  width: 120px; 
+  text-align: left;
   padding: 0;
 }
 
-.hr-editable-deadline:hover, .hr-editable-deadline:focus {
+.hr-editable-desc:hover, .hr-editable-desc:focus {
   background: #ffdcc8;
 }
 
@@ -242,11 +242,12 @@
   gap: 4px;
 }
 
+/* Было 70px, стало 140px */
 .hr-editable-jira {
   color: #3b82f6;
   font-size: 12px;
   font-weight: 600;
-  width: 70px; /* Фиксированная ширина как было */
+  width: 140px; 
   padding: 0;
 }
 

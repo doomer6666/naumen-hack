@@ -40,7 +40,7 @@ const navPools: Record<UserRole, NavItem[]> = {
   ],
   mentor: [
     { path: "/mentor/my-mentees", icon: UserCheck, label: "Мои подопечные" },
-    { path: "/directory", icon: Building2, label: "Справочник" },
+    { path: "/mentor/directory", icon: Building2, label: "Справочник" },
   ],
 };
 

@@ -128,3 +128,130 @@
   align-items: center;
   gap: 6px;
 }
+
+/* === Модалка переназначения плана === */
+
+.hr-assign-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  z-index: 40;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.hr-assign-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: 460px;
+  background: var(--nau-white);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--nau-border);
+  z-index: 50;
+  padding: 28px;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translate(-50%, -45%); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translate(-50%, -50%); 
+  }
+}
+
+.hr-assign-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--nau-light-gray);
+}
+
+.hr-assign-modal-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--nau-dark);
+}
+
+.hr-assign-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hr-assign-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hr-assign-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--nau-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hr-assign-select {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  font-size: 15px;
+  font-family: var(--font-main);
+  color: var(--nau-dark);
+  background-color: var(--nau-light-gray);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: all 0.2s ease;
+}
+
+.hr-assign-select:hover {
+  border-color: var(--nau-border);
+}
+
+.hr-assign-select:focus {
+  border-color: var(--nau-orange);
+  background-color: var(--nau-white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ff6720' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+.hr-assign-submit {
+  margin-top: 8px;
+  width: 100%;
+  justify-content: center;
+  padding: 14px;
+  font-size: 16px;
+}
+
+.hr-assign-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
