@@ -6,16 +6,30 @@ export const getNextFeedback = async (
   req: AuthRequest,
   res: Response,
 ): Promise<void> => {
-  // Заглушка: возвращаем статический опрос
-  res.json({
-    survey_id: "default_weekly",
-    questions: [
-      { id: 1, text: "Как ваше настроение?", type: "mood_score" },
-      { id: 2, text: "Насколько понятны задачи?", type: "clarity_score" },
-      { id: 3, text: "Хватает ли доступов?", type: "has_access" },
-      { id: 4, text: "Есть ли блокеры?", type: "blockers" },
-    ],
-  });
+  try {
+    const check = await pool.query(
+      `SELECT id FROM Feedback_Responses 
+       WHERE user_id = $1 AND submitted_at > NOW() - INTERVAL '7 days' 
+       LIMIT 1`,
+      [req.user?.id],
+    );
+
+    if (check.rows.length > 0) {
+      res.json({ submitted: true });
+    } else {
+      res.json({
+        submitted: false,
+        questions: [
+          { id: 1, text: "Как ваше настроение?", type: "mood_score" },
+          { id: 2, text: "Насколько понятны задачи?", type: "clarity_score" },
+          { id: 3, text: "Хватает ли доступов?", type: "has_access" },
+          { id: 4, text: "Есть ли блокеры?", type: "blockers" },
+        ],
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Ошибка проверки опроса" });
+  }
 };
 
 export const submitFeedback = async (
@@ -31,7 +45,6 @@ export const submitFeedback = async (
       [req.user?.id, mood_score, clarity_score, has_access, blockers],
     );
 
-    // Бонусные XP за прохождение опроса
     await pool.query(
       `UPDATE User_Plans SET total_xp = total_xp + 5 WHERE user_id = $1`,
       [req.user?.id],

@@ -1,117 +1,122 @@
-import React, { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect } from "react";
 import {
   Target,
   BookOpen,
   Lock,
   MessageSquare,
   Phone,
-  Smile,
-  Meh,
-  Frown,
   CheckSquare,
   Circle,
+  Loader2,
+  AlertCircle,
+  Award,
 } from "lucide-react";
-
-interface Contact {
-  id: string;
-  name: string;
-  role: string;
-  relation: string;
-  initials: string;
-}
-
-interface Milestone {
-  id: string;
-  title: string;
-  status: "completed" | "current" | "locked";
-  tasks: { name: string; done: boolean }[];
-}
-
-interface Achievement {
-  id: string;
-  title: string;
-  type: "gold" | "blue" | "locked";
-  icon: "target" | "book" | "lock";
-}
-
-const CONTACTS_MOCK: Contact[] = [
-  {
-    id: "1",
-    name: "Алексей Иванов",
-    role: "Старший разработчик",
-    relation: "Наставник",
-    initials: "АИ",
-  },
-  {
-    id: "2",
-    name: "Мария Смирнова",
-    role: "Специалист по кадрам",
-    relation: "Отдел кадров",
-    initials: "МС",
-  },
-];
-
-const INITIAL_PLAN_MOCK = {
-  level: 2,
-  points: 350,
-  progress: 45,
-  currentStage: "Месяц 1: Погружение",
-  milestones: [
-    {
-      id: "m1",
-      title: "Неделя 1: Добро пожаловать",
-      status: "completed",
-      tasks: [
-        { name: "Оформление доступов", done: true },
-        { name: "Вводная встреча", done: true },
-      ],
-    },
-    {
-      id: "m2",
-      title: "Месяц 1: Первые задачи",
-      status: "current",
-      tasks: [
-        { name: "Изучить архитектуру", done: true },
-        { name: "Выполнить первую задачу", done: false },
-      ],
-    },
-    {
-      id: "m3",
-      title: "Месяц 3: Итоги",
-      status: "locked",
-      tasks: [{ name: "Итоговая аттестация", done: false }],
-    },
-  ] as Milestone[],
-};
-
-const ACHIEVEMENTS_MOCK: Achievement[] = [
-  { id: "a1", title: "Первая задача", type: "gold", icon: "target" },
-  { id: "a2", title: "Мастер доступов", type: "blue", icon: "book" },
-  { id: "a3", title: "Неделя в компании", type: "locked", icon: "lock" },
-];
+import apiClient from "../../api/client";
+import MoodWidget from "../Dashboard/MoodWidget";
 
 export const EmployeeCabinet: React.FC = () => {
-  // Локальные стейты для имитации интерактивности
-  const [plan, setPlan] = useState(INITIAL_PLAN_MOCK);
-  const [activeMood, setActiveMood] = useState<
-    "good" | "normal" | "bad" | null
-  >("good");
-  const [hasAccess, setHasAccess] = useState(true);
+  const [plan, setPlan] = useState<any>(null);
+  const [gamification, setGamification] = useState<any>(null);
+  const [mentor, setMentor] = useState<any>(null);
 
-  // Обработчик клика по задаче
-  const toggleTask = (milestoneId: string, taskIndex: number) => {
-    setPlan((prev) => ({
-      ...prev,
-      milestones: prev.milestones.map((ms) => {
-        if (ms.id === milestoneId) {
-          const updatedTasks = [...ms.tasks];
-          updatedTasks[taskIndex].done = !updatedTasks[taskIndex].done;
-          return { ...ms, tasks: updatedTasks };
+  // UI состояния
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        const [planRes, gamRes, dirRes] = await Promise.allSettled([
+          apiClient.get("/plans/my"),
+          apiClient.get("/gamification/my-progress"),
+          apiClient.get("/directory/users"),
+        ]);
+
+        if (planRes.status === "fulfilled" && planRes.value.data) {
+          const planData = planRes.value.data;
+          setPlan(planData);
+
+          if (planData.mentor_id && dirRes.status === "fulfilled") {
+            const mentorData = dirRes.value.data.find(
+              (u: any) => u.id === planData.mentor_id,
+            );
+            if (mentorData) {
+              const parts = mentorData.name.split(" ");
+              const initials =
+                parts.length > 1
+                  ? (parts[0][0] + parts[1][0]).toUpperCase()
+                  : mentorData.name.substring(0, 2).toUpperCase();
+              setMentor({
+                ...mentorData,
+                initials,
+                relation: "Наставник",
+              });
+            }
+          }
         }
-        return ms;
-      }),
-    }));
+
+        if (gamRes.status === "fulfilled") {
+          setGamification(gamRes.value.data);
+        }
+      } catch (err) {
+        console.error("Ошибка загрузки кабинета:", err);
+        setError("Не удалось загрузить данные");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllData();
+  }, []);
+
+  const toggleTask = async (taskId: string, currentStatus: string) => {
+    if (currentStatus === "done") return;
+
+    try {
+      await apiClient.patch(`/plans/my/tasks/${taskId}`, {
+        status: "done",
+      });
+      setPlan((prev: any) => ({
+        ...prev,
+        tasks: prev.tasks.map((t: any) =>
+          t.user_task_id === taskId ? { ...t, status: "done" } : t,
+        ),
+      }));
+    } catch (err) {
+      console.error("Ошибка обновления задачи:", err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div
+        style={{ display: "flex", justifyContent: "center", padding: "40px" }}
+      >
+        <Loader2 size={40} className="spinner" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className="widget"
+        style={{ textAlign: "center", color: "var(--danger)" }}
+      >
+        <AlertCircle size={32} /> <p>{error}</p>
+      </div>
+    );
+  }
+
+  const totalTasks = plan?.tasks?.length || 0;
+  const doneTasks =
+    plan?.tasks?.filter((t: any) => t.status === "done").length || 0;
+  const progressPercent =
+    totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+  const currentLevel = gamification?.level || 1;
+  const totalXp = gamification?.xp || 0;
+  const badges = gamification?.badges || [];
 
   return (
     <div className="dashboard-grid">
@@ -119,7 +124,7 @@ export const EmployeeCabinet: React.FC = () => {
         <div className="widget-title">
           План развития
           <span className="task-tag orange-tag">
-            Уровень {plan.level} ({plan.points} баллов)
+            Уровень {currentLevel} ({totalXp} XP)
           </span>
         </div>
 
@@ -129,7 +134,7 @@ export const EmployeeCabinet: React.FC = () => {
             style={{
               width: "130px",
               height: "130px",
-              background: `conic-gradient(var(--nau-orange) ${plan.progress}%, var(--nau-light-gray) 0)`,
+              background: `conic-gradient(var(--nau-orange) ${progressPercent}%, var(--nau-light-gray) 0)`,
             }}
           >
             <div
@@ -137,176 +142,155 @@ export const EmployeeCabinet: React.FC = () => {
               style={{ width: "100px", height: "100px" }}
             >
               <span className="percent" style={{ fontSize: "26px" }}>
-                {plan.progress}%
+                {progressPercent}%
               </span>
               <span className="label">Пройдено</span>
             </div>
           </div>
           <div className="flex-col align-center gap-4 text-center">
-            <p className="text-gray text-sm m-0">Текущий этап:</p>
-            <strong className="font-bold text-dark">{plan.currentStage}</strong>
+            <p className="text-gray text-sm m-0">Задач выполнено:</p>
+            <strong className="font-bold text-dark">
+              {doneTasks} из {totalTasks}
+            </strong>
           </div>
         </div>
 
         <div className="task-list">
-          {plan.milestones.map((ms) => {
-            const isCurrent = ms.status === "current";
-            const isLocked = ms.status === "locked";
-            const itemClass = `task-item flex-col gap-12 ${isCurrent ? "active" : ""} ${isLocked ? "locked" : ""}`;
-
-            return (
-              <div key={ms.id} className={itemClass}>
+          {plan?.tasks?.length > 0 ? (
+            plan.tasks.map((task: any) => (
+              <div
+                key={task.user_task_id}
+                className={`task-item flex-col gap-12 ${task.status !== "done" ? "active" : ""}`}
+              >
                 <div className="task-info w-full">
-                  <div className="flex-row justify-between align-center">
-                    <h4
-                      className={`flex-row align-center gap-8 m-0 ${isCurrent ? "text-orange" : "text-dark"}`}
+                  <div className="flex-row align-center gap-8">
+                    <div
+                      className="task-checkbox"
+                      style={{
+                        borderColor:
+                          task.status === "done" ? "var(--success)" : undefined,
+                        backgroundColor:
+                          task.status === "done" ? "var(--success)" : undefined,
+                      }}
+                      onClick={() => toggleTask(task.user_task_id, task.status)}
                     >
-                      {isLocked ? (
-                        <Lock size={18} />
-                      ) : ms.status === "completed" ? (
-                        <CheckSquare size={18} className="text-success" />
+                      {task.status === "done" ? (
+                        <CheckSquare size={14} color="white" />
                       ) : (
-                        <Circle size={18} />
+                        <Circle size={14} />
                       )}
-                      {ms.title}
+                    </div>
+                    <h4
+                      className={`m-0 ${task.status === "done" ? "text-gray" : "text-dark"}`}
+                      style={{
+                        textDecoration:
+                          task.status === "done" ? "line-through" : "none",
+                      }}
+                    >
+                      {task.title}
                     </h4>
                   </div>
-                  {!isLocked && (
-                    <div className="flex-col gap-8 mt-3">
-                      {ms.tasks.map((task, idx) => (
-                        <div
-                          key={idx}
-                          className="flex-row align-center gap-8 text-gray cursor-pointer"
-                          onClick={() => toggleTask(ms.id, idx)}
-                        >
-                          <div
-                            className={`task-checkbox ${task.done ? "checked" : ""}`}
-                          />
-                          <span
-                            style={{
-                              textDecoration: task.done
-                                ? "line-through"
-                                : "none",
-                            }}
-                          >
-                            {task.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                  {task.description && (
+                    <p
+                      className="m-0 text-sm text-gray mt-2"
+                      style={{ paddingLeft: "24px" }}
+                    >
+                      {task.description}
+                    </p>
                   )}
                 </div>
               </div>
-            );
-          })}
+            ))
+          ) : (
+            <p className="text-gray text-sm text-center">
+              План еще не назначен
+            </p>
+          )}
         </div>
       </div>
 
       <div className="widget">
         <div className="widget-title">Команда поддержки</div>
         <div className="task-list">
-          {CONTACTS_MOCK.map((contact) => (
-            <div key={contact.id} className="task-item align-center">
+          {mentor ? (
+            <div className="task-item align-center">
               <div
                 className="avatar"
                 style={{ width: "48px", height: "48px", fontSize: "16px" }}
               >
-                {contact.initials}
+                {mentor.initials}
               </div>
               <div className="task-info">
                 <h4 style={{ fontSize: "15px", margin: "0 0 4px 0" }}>
-                  {contact.name}
+                  {mentor.name}
                 </h4>
                 <p className="m-0 text-sm">
-                  {contact.role} •{" "}
+                  {mentor.position || "Разработчик"} •{" "}
                   <strong className="font-bold text-dark">
-                    {contact.relation}
+                    {mentor.relation}
                   </strong>
                 </p>
               </div>
               <div className="flex-row gap-8">
-                <button
-                  className="mood-btn icon-only"
-                  onClick={() => alert(`Открыть чат с ${contact.name}`)}
-                >
+                <button className="mood-btn icon-only">
                   <MessageSquare size={18} />
                 </button>
-                <button
-                  className="mood-btn icon-only"
-                  onClick={() => alert(`Позвонить ${contact.name}`)}
-                >
+                <button className="mood-btn icon-only">
                   <Phone size={18} />
                 </button>
               </div>
             </div>
-          ))}
+          ) : (
+            <div className="text-center p-4 text-gray text-sm">
+              <p>Наставник пока не назначен</p>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="widget">
-        <div className="widget-title">Оценка настроения</div>
-        <div className="flex-col justify-between h-full gap-16">
-          <p className="text-dark m-0">
-            Как прошла ваша неделя? Всё ли понятно?
-          </p>
-          <div className="mood-buttons">
-            <button
-              className={`mood-btn ${activeMood === "good" ? "selected" : ""}`}
-              onClick={() => setActiveMood("good")}
-            >
-              <Smile size={24} />
-              <span>Отлично</span>
-            </button>
-            <button
-              className={`mood-btn ${activeMood === "normal" ? "selected" : ""}`}
-              onClick={() => setActiveMood("normal")}
-            >
-              <Meh size={24} />
-              <span>Нормально</span>
-            </button>
-            <button
-              className={`mood-btn ${activeMood === "bad" ? "selected" : ""}`}
-              onClick={() => setActiveMood("bad")}
-            >
-              <Frown size={24} />
-              <span>Сложно</span>
-            </button>
-          </div>
-          <div
-            className="flex-row align-center gap-12 p-3 bg-light rounded-lg mt-2 cursor-pointer"
-            onClick={() => setHasAccess(!hasAccess)}
-          >
-            <div
-              className={`task-checkbox ${hasAccess ? "checked" : ""}`}
-            ></div>
-            <span
-              className="font-semibold text-dark text-sm"
-              style={{ userSelect: "none" }}
-            >
-              У меня есть все необходимые доступы
-            </span>
-          </div>
-        </div>
-      </div>
+      <MoodWidget />
 
       <div className="widget col-span-2">
         <div className="widget-title">
           Достижения
-          <span className="widget-subtitle">Собрано: 2/15</span>
+          <span className="widget-subtitle">Собрано: {badges.length}</span>
         </div>
         <div className="badges-list">
-          {ACHIEVEMENTS_MOCK.map((achieve) => (
-            <div key={achieve.id} className="badge-item">
-              <div className={`badge-icon ${achieve.type}`}>
-                {achieve.icon === "target" && <Target size={28} />}
-                {achieve.icon === "book" && <BookOpen size={28} />}
-                {achieve.icon === "lock" && <Lock size={28} />}
+          {badges.length > 0 ? (
+            badges.map((badge: any) => (
+              <div key={badge.id} className="badge-item">
+                <div className="badge-icon gold">
+                  <Award size={28} />
+                </div>
+                <span className="badge-title text-dark mt-2">{badge.name}</span>
               </div>
-              <span className="badge-title text-dark mt-2">
-                {achieve.title}
-              </span>
+            ))
+          ) : (
+            <div className="text-center w-full p-4 text-gray text-sm col-span-2">
+              <Lock size={32} style={{ margin: "0 auto 8px" }} />
+              <p>
+                Пока нет достижений. Выполняйте задачи, чтобы получить первые
+                бейджи!
+              </p>
             </div>
-          ))}
+          )}
+
+          {badges.length === 0 && (
+            <>
+              <div className="badge-item" style={{ opacity: 0.3 }}>
+                <div className="badge-icon locked">
+                  <Target size={28} />
+                </div>
+                <span className="badge-title text-gray mt-2">???</span>
+              </div>
+              <div className="badge-item" style={{ opacity: 0.3 }}>
+                <div className="badge-icon locked">
+                  <BookOpen size={28} />
+                </div>
+                <span className="badge-title text-gray mt-2">???</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

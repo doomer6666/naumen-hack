@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/doomer6666/naumen-hack/issues"
   },
-  "homepage": "https://github.com/doomer6666/naumen-hack#readme"
+  "homepage": "https://github.com/doomer6666/naumen-hack#readme",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  }
 }
