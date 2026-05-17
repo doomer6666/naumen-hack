@@ -66,8 +66,6 @@ const App: React.FC = () => {
                   element={<HrEmployeePlan />}
                 />
                 <Route path="/hr/feedbacks" element={<HrFeedbacks />} />
-                <Route path="/hr/integrations" element={<PlaceholderPage />} />
-                <Route path="/hr/settings" element={<PlaceholderPage />} />
               </Route>
 
               {/* --- Ментор --- */}

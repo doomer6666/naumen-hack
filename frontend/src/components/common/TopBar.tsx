@@ -35,8 +35,6 @@ const navPools: Record<UserRole, NavItem[]> = {
     { path: "/hr/templates", icon: FileText, label: "Шаблоны" },
     { path: "/hr/employees", icon: Users, label: "Сотрудники" },
     { path: "/hr/feedbacks", icon: MessageSquare, label: "Обратная связь" },
-    { path: "/hr/integrations", icon: Plug, label: "Интеграции" },
-    { path: "/hr/settings", icon: Settings, label: "Настройки" },
   ],
   mentor: [
     { path: "/mentor/my-mentees", icon: UserCheck, label: "Мои подопечные" },
