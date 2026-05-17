@@ -100,8 +100,8 @@ export const login = async (req: AuthRequest, res: Response): Promise<void> => {
       res.status(401).json({ message: "Неверный email или пароль" });
       return;
     }
-
-    const isMatch = await bcrypt.compare(password, user.password_hash);
+    
+    const isMatch = password === user.password_hash;
     if (!isMatch) {
       res.status(401).json({ message: "Неверный email или пароль" });
       return;
