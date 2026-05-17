@@ -129,7 +129,7 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // Просто name, без full_name и без AS
     const result = await pool.query<UserRow>(
-      "SELECT id, email, name, role, position, avatar_url, department_id FROM Users WHERE id = $1",
+      "SELECT id, email, name, role, position, department FROM Users WHERE id = $1",
       [req.user?.id],
     );
 
