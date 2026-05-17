@@ -89,17 +89,31 @@ export const assignPlan = async (
       [template_id],
     );
 
-    // 4. Создаем тикеты Jira и копируем задачи
     let jiraTicketsCreated = 0;
     for (const task of tasksRes.rows) {
       let jiraIssueKey = null;
+
       if (task.jira_summary) {
+        console.log(`[JIRA] Попытка создать тикет: "${task.jira_summary}"`);
         jiraIssueKey = await createJiraTicket(
           task.jira_summary,
           task.description || task.title,
         );
-        if (jiraIssueKey) jiraTicketsCreated++;
+
+        if (jiraIssueKey) {
+          console.log(`[JIRA] Тикет успешно создан: ${jiraIssueKey}`);
+          jiraTicketsCreated++;
+        } else {
+          console.error(
+            `[JIRA] ОШИБКА: Тикет не создан для "${task.jira_summary}". Проверь токен, URL проекта и права доступа.`,
+          );
+        }
+      } else {
+        console.warn(
+          `[JIRA] У задачи "${task.title}" нет поля jira_summary. Пропуск создания тикета.`,
+        );
       }
+
       await client.query(
         `INSERT INTO User_Tasks (user_plan_id, template_task_id, status, jira_issue_key)
          VALUES ($1, $2, 'pending', $3)`,

@@ -104,17 +104,23 @@ export const updateMyTask = async (
 
     const jiraKey = taskInfoRes.rows[0].jira_issue_key;
 
-    // Обновляем статус
+    // --- ОТЛАДКА JIRA ---
+    console.log(`[DEBUG] Отправка на проверку. Task ID: ${taskId}`);
+    console.log(`[DEBUG] Jira Issue Key из базы: ${jiraKey}`);
+    // --------------------
+
     const result = await pool.query(
       `UPDATE User_Tasks SET status = 'in_review', mentor_comment = NULL WHERE id = $1 RETURNING *`,
       [taskId],
     );
 
-    // Асинхронно двигаем тикет в Jira (не ломаем запрос, если Jira упала)
     if (jiraKey) {
-      transitionJiraTicket(jiraKey, "In Review").catch((err) =>
-        console.error("Jira transition error (In Review):", err),
+      console.log(`[DEBUG] Пытаюсь сдвинуть тикет ${jiraKey} в In Review...`);
+      transitionJiraTicket(jiraKey, "in_review").catch((err) =>
+        console.error("[DEBUG] Ошибка Jira:", err),
       );
+    } else {
+      console.warn(`[DEBUG] Тикет в Jira не привязан к этой задаче!`);
     }
 
     res.json({ ...result.rows[0], jira_issue_key: jiraKey });

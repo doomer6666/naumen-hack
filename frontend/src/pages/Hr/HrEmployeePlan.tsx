@@ -275,7 +275,7 @@ const HrEmployeePlan: React.FC = () => {
                           </span>
                           {task.jira_issue_key && (
                             <a
-                              href={`https://your-domain.atlassian.net/browse/${task.jira_issue_key}`}
+                              href={`https://naumen.atlassian.net/browse/${task.jira_issue_key}`}
                               target="_blank"
                               rel="noreferrer"
                               className="task-tag hr-jira-tag"

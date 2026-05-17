@@ -54,43 +54,78 @@ export const createJiraTicket = async (
   }
 };
 
-// Универсальная функция перемещения тикета
 export const transitionJiraTicket = async (
   issueKey: string,
-  targetStatusName: string,
+  targetStatusKey: string,
 ): Promise<boolean> => {
   if (!JIRA_BASE_URL || !JIRA_API_TOKEN) return false;
   try {
-    // 1. Получаем доступные переходы
     const transitionsRes = await axios.get(
       `${JIRA_BASE_URL}/rest/api/3/issue/${issueKey}/transitions`,
       { headers: getAuthHeader() },
     );
 
     const transitions = transitionsRes.data.transitions;
-    // Ищем переход, чей целевой статус совпадает с targetStatusName (игнорируя регистр)
-    const targetTransition = transitions.find(
-      (t: any) => t.to?.name?.toLowerCase() === targetStatusName.toLowerCase(),
+
+    // Приоритетные статусы для каждого действия
+    const priorityMap: Record<string, string[]> = {
+      in_review: [
+        "на проверке",
+        "in review",
+        "в работе",
+        "in progress",
+        "ревью",
+        "review",
+      ],
+      done: ["выполнено", "done", "закрыто", "closed", "готово", "завершено"],
+      pending: [
+        "к выполнению",
+        "to do",
+        "открыто",
+        "open",
+        "backlog",
+        "сделать",
+        "pending",
+      ],
+    };
+
+    const possibleNames = priorityMap[targetStatusKey.toLowerCase()] || [
+      targetStatusKey.toLowerCase(),
+    ];
+
+    // Ищем точное совпадение (без учета регистра и пробелов по краям)
+    let targetTransition = transitions.find((t: any) =>
+      possibleNames.includes(t.to?.name?.toLowerCase().trim()),
     );
 
+    // Если не нашли точное, ищем частичное совпадение (на случай если статус называется "В работе (In Progress)")
+    if (!targetTransition) {
+      targetTransition = transitions.find((t: any) =>
+        possibleNames.some((name) => t.to?.name?.toLowerCase().includes(name)),
+      );
+    }
+
     if (targetTransition) {
-      // 2. Выполняем переход
       await axios.post(
         `${JIRA_BASE_URL}/rest/api/3/issue/${issueKey}/transitions`,
         { transition: { id: targetTransition.id } },
         { headers: getAuthHeader() },
       );
-      console.log(`Jira ticket ${issueKey} moved to ${targetStatusName}`);
+      console.log(
+        `Jira ticket ${issueKey} moved to ${targetTransition.to.name}`,
+      );
       return true;
     }
+
+    // Выводим то, что реально пришло из Jira, чтобы понять, почему не совпало
     console.warn(
-      `No '${targetStatusName}' transition found for ${issueKey}. Available: ${transitions.map((t: any) => t.to?.name).join(", ")}`,
+      `[JIRA] No transition for '${targetStatusKey}'. Ticket: ${issueKey}. Available statuses: ${transitions.map((t: any) => t.to?.name).join(", ")}`,
     );
     return false;
   } catch (error: any) {
     console.error(
-      `Error moving Jira ticket ${issueKey} to ${targetStatusName}:`,
-      error.response?.data || error.message,
+      `[JIRA] Error moving ticket ${issueKey}:`,
+      error.response?.data?.errors || error.message,
     );
     return false;
   }
