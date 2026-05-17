@@ -11,7 +11,7 @@ import {
   ChevronUp,
   Loader2,
   ExternalLink,
-  Pencil, // Добавлен импорт карандаша
+  Pencil,
 } from "lucide-react";
 import apiClient from "../../api/client";
 import "./HrEmployeePlan.css";
@@ -59,7 +59,30 @@ const HrEmployeePlan: React.FC = () => {
         setStatus(
           planData.status === "in_progress" ? "В процессе" : planData.status,
         );
-        setStages(planData.stages || []);
+
+        // Группируем задачи по этапам (так же как в PlanPage)
+        const apiTasks = planData.tasks || [];
+        const stageMap = new Map<string, Stage>();
+
+        apiTasks.forEach((t: any) => {
+          if (!stageMap.has(t.stage_title)) {
+            stageMap.set(t.stage_title, {
+              id: t.stage_title,
+              title: t.stage_title,
+              isOpen: true,
+              tasks: [],
+            });
+          }
+          stageMap.get(t.stage_title)!.tasks.push({
+            user_task_id: t.user_task_id,
+            title: t.title,
+            deadline: t.description || "—",
+            isCompleted: t.status === "done",
+            jira_issue_key: t.jira_issue_key,
+          });
+        });
+
+        setStages(Array.from(stageMap.values()));
 
         const dirRes = await apiClient.get("/directory/users");
         setMentorsList(dirRes.data.filter((u: any) => u.role !== "newbie"));
@@ -197,7 +220,7 @@ const HrEmployeePlan: React.FC = () => {
                 className="hr-icon-btn"
                 onClick={() => setIsEditingMentor(true)}
               >
-                <Pencil size={16} /> {/* Заменено на карандаш */}
+                <Pencil size={16} />
               </button>
             </>
           )}

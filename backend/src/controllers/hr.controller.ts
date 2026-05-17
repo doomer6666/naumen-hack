@@ -462,3 +462,92 @@ export const updateTemplate = async (
     client.release();
   }
 };
+
+export const getHrAnalytics = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  if (!isHR(req, res)) return;
+  try {
+    // 1. Метрики по планам
+    const plansRes = await pool.query(
+      `SELECT status, COUNT(*) as count FROM User_Plans GROUP BY status`,
+    );
+    let active = 0;
+    let completedCount = 0;
+    plansRes.rows.forEach((r: any) => {
+      if (r.status === "in_progress") active = parseInt(r.count, 10);
+      if (r.status === "completed") completedCount = parseInt(r.count, 10);
+    });
+    const totalPlans = active + completedCount;
+    const passRate =
+      totalPlans > 0 ? Math.round((completedCount / totalPlans) * 100) : 0;
+
+    // 2. Удовлетворенность (средний пульс * 10)
+    const moodRes = await pool.query(
+      `SELECT AVG(mood_score) as avg FROM Feedback_Responses`,
+    );
+    const avgMood = parseFloat(moodRes.rows[0]?.avg || "0");
+    const satisfaction = Math.round(avgMood * 10);
+
+    // 3. Средний прогресс задач
+    const taskRes = await pool.query(`
+      SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE ut.status = 'done') as done 
+      FROM User_Tasks ut 
+      JOIN User_Plans up ON ut.user_plan_id = up.id 
+      WHERE up.status = 'in_progress'
+    `);
+    const taskTotal = parseInt(taskRes.rows[0].total, 10) || 1;
+    const taskDone = parseInt(taskRes.rows[0].done, 10) || 0;
+    const avgProgress = Math.round((taskDone / taskTotal) * 100);
+
+    // 4. Сотрудники под угрозой (разбиваем на 2 простых запроса)
+    const usersRes = await pool.query(`
+      SELECT u.id, u.name, u.position,
+             COUNT(ut.id) as total_tasks,
+             COUNT(ut.id) FILTER (WHERE ut.status = 'done') as done_tasks
+      FROM Users u
+      JOIN User_Plans up ON u.id = up.user_id AND up.status = 'in_progress'
+      LEFT JOIN User_Tasks ut ON up.id = ut.user_plan_id
+      WHERE u.role = 'newbie'
+      GROUP BY u.id, u.name, u.position
+    `);
+
+    const moodsRes = await pool.query(
+      `SELECT user_id, mood_score FROM Feedback_Responses`,
+    );
+    const moodMap = new Map(
+      moodsRes.rows.map((m: any) => [m.user_id, m.mood_score]),
+    );
+
+    const atRisk = usersRes.rows
+      .filter((u: any) => {
+        const total = parseInt(u.total_tasks, 10) || 1;
+        const done = parseInt(u.done_tasks, 10) || 0;
+        const progress = (done / total) * 100;
+        const mood = moodMap.get(u.id);
+        return (mood && mood < 5) || progress < 30;
+      })
+      .map((u: any) => {
+        const total = parseInt(u.total_tasks, 10) || 1;
+        const done = parseInt(u.done_tasks, 10) || 0;
+        const progress = Math.round((done / total) * 100);
+        const mood = moodMap.get(u.id);
+
+        let issue = `Прогресс: ${progress}%`;
+        if (mood && mood < 5) issue = `Низкий пульс: ${mood}/10`;
+
+        return {
+          id: u.id,
+          name: u.name,
+          role: u.position || "Сотрудник",
+          issue,
+        };
+      });
+
+    res.json({ active, passRate, satisfaction, avgProgress, atRisk });
+  } catch (error) {
+    console.error("=== АНАЛИТИКА ОШИБКА ===", error);
+    res.status(500).json({ message: "Ошибка аналитики" });
+  }
+};
