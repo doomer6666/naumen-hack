@@ -8,15 +8,18 @@ import {
   Smile,
   Meh,
   Frown,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import apiClient from "../../api/client";
+import "./HRCabinet.css"; // Убедись, что стили подключены
 
 const getMoodIcon = (score: number) => {
   if (score >= 8)
-    return <Smile size={18} style={{ color: "var(--success)" }} />;
+    return <Smile size={20} style={{ color: "var(--success)" }} />;
   if (score >= 5)
-    return <Meh size={18} style={{ color: "var(--nau-orange)" }} />;
-  return <Frown size={18} style={{ color: "var(--danger)" }} />;
+    return <Meh size={20} style={{ color: "var(--nau-orange)" }} />;
+  return <Frown size={20} style={{ color: "var(--danger)" }} />;
 };
 
 export const HRCabinet: React.FC = () => {
@@ -114,29 +117,44 @@ export const HRCabinet: React.FC = () => {
         </div>
       </div>
 
+      {/* Обновленный блок Пульс команды */}
       <div className="widget" style={{ gridColumn: "span 2" }}>
         <div className="widget-title">
           Пульс команды
           <span className="widget-subtitle">Последние ответы</span>
         </div>
-        <div className="task-list">
+        <div className="hr-pulse-list">
           {feedbacks.length === 0 ? (
-            <p className="text-gray text-sm text-center">
+            <p className="text-gray text-sm text-center" style={{ padding: "24px 0" }}>
               Пока никто не оставлял обратную связь
             </p>
           ) : (
             feedbacks.map((fb: any) => (
-              <div key={fb.id} className="task-item today">
-                <div style={{ marginRight: "12px" }}>
+              <div key={fb.id} className="hr-pulse-item">
+                <div className="hr-pulse-icon-wrapper">
                   {getMoodIcon(fb.mood_score)}
                 </div>
-                <div className="task-info">
+                <div className="hr-pulse-content">
                   <h4>{fb.user_name || "Сотрудник"}</h4>
-                  <p>
-                    Оценка: {fb.mood_score}/10 • Доступы:{" "}
-                    {fb.has_access ? "✅ Есть" : "❌ Нет"}
-                    {fb.blockers && ` • Блокеры: ${fb.blockers}`}
-                  </p>
+                  <div className="hr-pulse-tags">
+                    <span className="task-tag hr-pulse-score">
+                      Оценка: {fb.mood_score}/10
+                    </span>
+                    {fb.has_access ? (
+                      <span className="task-tag hr-pulse-access-yes">
+                        <CheckCircle size={12} /> Доступы есть
+                      </span>
+                    ) : (
+                      <span className="task-tag hr-pulse-access-no">
+                        <XCircle size={12} /> Нет доступов
+                      </span>
+                    )}
+                  </div>
+                  {fb.blockers && (
+                    <p className="hr-pulse-blocker">
+                      Блокеры: {fb.blockers}
+                    </p>
+                  )}
                 </div>
               </div>
             ))

@@ -17,6 +17,7 @@ import HrEmployees from "./pages/Hr/HrEmployees";
 import HrEmployeePlan from "./pages/Hr/HrEmployeePlan";
 import HrFeedbacks from "./pages/Hr/HrFeedbacks";
 import MenteesList from "./pages/Mentor/MenteesList";
+import { FeedbackPage } from "./pages/Feedback/FeedbackPage";
 
 const App: React.FC = () => {
   return (
@@ -47,7 +48,7 @@ const App: React.FC = () => {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/plan" element={<PlanPage />} />
                 <Route path="/directory" element={<DirectoryPage />} />
-                <Route path="/feedback" element={<PlaceholderPage />} />
+                <Route path="/feedback" element={<FeedbackPage />} />
                 <Route path="/achievements" element={<AchievementsPage />} />
               </Route>
 
@@ -76,6 +77,7 @@ const App: React.FC = () => {
                   path="/mentor/mentee/:userId/plan"
                   element={<PlanPage />}
                 />
+                <Route path="/mentor/directory" element={<DirectoryPage />} />
               </Route>
             </Route>
           </Route>

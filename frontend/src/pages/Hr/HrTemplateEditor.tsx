@@ -8,7 +8,8 @@ import {
   Plus,
   Trash2,
   Calendar,
-  Link,
+  FileText,
+  Ticket,
   ChevronDown,
   ChevronUp,
   Loader2,
@@ -103,7 +104,7 @@ const HrTemplateEditor: React.FC = () => {
                 {
                   id: `t${Date.now()}`,
                   title: "Новая задача",
-                  deadline: "Day 1",
+                  deadline: "Название",
                 },
               ],
             }
@@ -305,7 +306,12 @@ const HrTemplateEditor: React.FC = () => {
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
               className="hr-editable-input"
-              style={{ width: "50px", textAlign: "center" }}
+              style={{ 
+                width: "50px", 
+                textAlign: "center", 
+                background: "var(--nau-white)", // Белый фон по умолчанию
+                borderColor: "var(--nau-border)" // Легкая рамка, чтобы контур был виден всегда
+              }}
             />
             <span className="text-gray text-sm">дней</span>
           </div>
@@ -412,7 +418,7 @@ const HrTemplateEditor: React.FC = () => {
                       />
                       <div className="hr-task-meta">
                         <div className="hr-editable-tag-wrapper">
-                          <Calendar size={12} style={{ flexShrink: 0 }} />
+                          <FileText size={12} style={{ flexShrink: 0 }} />
                           <input
                             type="text"
                             value={task.deadline}
@@ -424,7 +430,7 @@ const HrTemplateEditor: React.FC = () => {
                                 e.target.value,
                               )
                             }
-                            className="hr-editable-input hr-editable-deadline"
+                            className="hr-editable-input hr-editable-desc"
                             onMouseDown={(e) => e.stopPropagation()}
                           />
                         </div>
@@ -434,10 +440,10 @@ const HrTemplateEditor: React.FC = () => {
                             background: "var(--nau-light-blue, #eef2ff)",
                           }}
                         >
-                          <Link size={12} style={{ flexShrink: 0 }} />
+                          <Ticket size={12} style={{ flexShrink: 0 }} />
                           <input
                             type="text"
-                            placeholder="Jira Summary"
+                            placeholder="Название в Jira"
                             value={task.jiraTemplate || ""}
                             onChange={(e) =>
                               updateTaskField(

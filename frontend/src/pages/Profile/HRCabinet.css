@@ -1,0 +1,90 @@
+/* === Пульс команды === */
+.hr-pulse-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hr-pulse-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background: var(--nau-light-gray);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.hr-pulse-item:hover {
+  background: var(--nau-bg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+/* Кружок для иконки настроения */
+.hr-pulse-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--nau-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.hr-pulse-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hr-pulse-content h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--nau-dark);
+  margin: 0;
+}
+
+.hr-pulse-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Тег оценки */
+.hr-pulse-score {
+  background: #eef2ff;
+  color: #4f46e5;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Теги доступов */
+.hr-pulse-access-yes {
+  background: #e6f9f0;
+  color: var(--success);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hr-pulse-access-no {
+  background: #fde8e8;
+  color: var(--danger);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Блокеры */
+.hr-pulse-blocker {
+  font-size: 13px;
+  color: var(--nau-gray);
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--nau-border);
+}

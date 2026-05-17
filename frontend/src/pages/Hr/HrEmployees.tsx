@@ -8,6 +8,8 @@ import {
   AlertCircle,
   X,
   Loader2,
+  FileText,
+  Users,
 } from "lucide-react";
 import apiClient from "../../api/client";
 import "./HrEmployees.css";
@@ -28,7 +30,6 @@ export const HrEmployees: React.FC = () => {
   const [assigning, setAssigning] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
     fetchEmployees();
   }, []);
 
@@ -67,15 +68,11 @@ export const HrEmployees: React.FC = () => {
     if (!selectedTemplate || !assigningUser) return;
     setAssigning(true);
     try {
-      const res = await apiClient.post(
-        `/hr/users/${assigningUser.id}/assign-plan`,
-        {
-          template_id: selectedTemplate,
-          mentor_id: selectedMentor || null,
-        },
-      );
-      const jiraCount = res.data.jira_tickets_created || 0;
-      alert(`План успешно назначен!\nСоздано тикетов в Jira: ${jiraCount}`);
+      await apiClient.post(`/hr/users/${assigningUser.id}/assign-plan`, {
+        template_id: selectedTemplate,
+        mentor_id: selectedMentor || null,
+      });
+      // Убрали alert, просто закрываем и обновляем данные
       setIsAssignOpen(false);
       fetchEmployees();
     } catch (err: any) {
@@ -159,75 +156,76 @@ export const HrEmployees: React.FC = () => {
         </div>
       )}
 
+      {/* Оверлей и модалка переназначения */}
       {isAssignOpen && assigningUser && (
-        <div className="widget hr-invite-form">
-          <div className="hr-invite-header">
-            <h3>Назначить план: {assigningUser.name}</h3>
-            <button
-              className="hr-icon-btn"
-              onClick={() => setIsAssignOpen(false)}
-            >
-              <X size={18} />
-            </button>
-          </div>
+        <>
           <div
-            className="hr-invite-body"
-            style={{ flexDirection: "column", gap: "16px" }}
-          >
-            <div>
-              <label
-                className="widget-subtitle"
-                style={{ display: "block", marginBottom: "8px" }}
+            className="hr-assign-overlay"
+            onClick={() => setIsAssignOpen(false)}
+          />
+          <div className="hr-assign-modal">
+            <div className="hr-assign-modal-header">
+              <h3>Назначить план: {assigningUser.name}</h3>
+              <button
+                className="hr-icon-btn"
+                onClick={() => setIsAssignOpen(false)}
               >
-                Шаблон адаптации *
-              </label>
-              <select
-                className="hr-input"
-                value={selectedTemplate}
-                onChange={(e) => setSelectedTemplate(e.target.value)}
-                style={{ width: "100%", padding: "10px" }}
-              >
-                <option value="" disabled>
-                  Выберите шаблон
-                </option>
-                {templates.map((t: any) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name || t.title || "Шаблон"}
-                  </option>
-                ))}
-              </select>
+                <X size={18} />
+              </button>
             </div>
-            <div>
-              <label
-                className="widget-subtitle"
-                style={{ display: "block", marginBottom: "8px" }}
-              >
-                Наставник
-              </label>
-              <select
-                className="hr-input"
-                value={selectedMentor}
-                onChange={(e) => setSelectedMentor(e.target.value)}
-                style={{ width: "100%", padding: "10px" }}
-              >
-                <option value="">Не назначать</option>
-                {mentors.map((m: any) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
+            <div className="hr-assign-modal-body">
+              <div className="hr-assign-field">
+                <label className="hr-assign-label">
+                  <FileText size={14} />
+                  Шаблон адаптации *
+                </label>
+                <select
+                  className="hr-assign-select"
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Выберите шаблон
                   </option>
-                ))}
-              </select>
+                  {templates.map((t: any) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name || t.title || "Шаблон"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="hr-assign-field">
+                <label className="hr-assign-label">
+                  <Users size={14} />
+                  Наставник
+                </label>
+                <select
+                  className="hr-assign-select"
+                  value={selectedMentor}
+                  onChange={(e) => setSelectedMentor(e.target.value)}
+                >
+                  <option value="">Не назначать</option>
+                  {mentors.map((m: any) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                className="hr-btn-primary hr-assign-submit"
+                onClick={handleAssign}
+                disabled={!selectedTemplate || assigning}
+              >
+                {assigning ? (
+                  <Loader2 size={18} className="spinner" />
+                ) : null}
+                {/* Убрали галочку CheckCircle */}
+                {assigning ? "Создаем тикеты Jira..." : "Назначить план"}
+              </button>
             </div>
-            <button
-              className="hr-btn-primary"
-              onClick={handleAssign}
-              disabled={!selectedTemplate || assigning}
-            >
-              {assigning ? <Loader2 size={18} className="spinner" /> : null}{" "}
-              {assigning ? "Создаем тикеты Jira..." : "Назначить план"}
-            </button>
           </div>
-        </div>
+        </>
       )}
 
       <div className="widget">

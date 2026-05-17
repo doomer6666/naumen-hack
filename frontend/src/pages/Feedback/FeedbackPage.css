@@ -1,0 +1,263 @@
+.feedback-container {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.feedback-container > .widget {
+  width: 100%;
+  max-width: 760px; /* Чуть шире, чем было */
+  padding: 32px;
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 8px;
+}
+
+/* === Секции === */
+.fb-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fb-question {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--nau-dark);
+  margin: 0;
+}
+
+/* === Настроение (Кнопки из MoodWidget) === */
+.fb-mood-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.fb-mood-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  background: var(--nau-light-gray);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--nau-gray);
+  transition: all 0.2s ease;
+}
+
+.fb-mood-btn:hover {
+  border-color: var(--nau-border);
+  color: var(--nau-dark);
+}
+
+.fb-mood-btn.selected {
+  border-color: var(--nau-orange); /* Перекрывается inline стилем */
+  background: var(--nau-orange-light);
+  color: var(--nau-orange);
+}
+
+/* === Понятность (Слайдер + Эмодзи) === */
+.fb-clarity-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--nau-light-gray);
+  padding: 16px 24px;
+  border-radius: 12px;
+}
+
+.fb-clarity-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 60px;
+}
+
+.fb-clarity-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--nau-dark);
+}
+
+.fb-slider-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fb-slider-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--nau-gray);
+}
+
+.fb-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Ползунок всегда оранжевый */
+.fb-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--nau-white);
+  border: 3px solid var(--nau-orange);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.fb-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.fb-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--nau-white);
+  border: 3px solid var(--nau-orange);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+/* === Тогл (Доступы) === */
+.fb-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.fb-toggle {
+  width: 44px;
+  height: 24px;
+  background: #ccc;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.3s ease;
+  flex-shrink: 0;
+}
+
+.fb-toggle.active {
+  background: var(--success);
+}
+
+.fb-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: var(--nau-white);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.fb-toggle.active .fb-toggle-thumb {
+  transform: translateX(20px);
+}
+
+.fb-toggle-hint {
+  font-size: 13px;
+  color: var(--nau-gray);
+  margin-top: -4px;
+}
+
+/* === Текстовое поле === */
+.fb-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-family: var(--font-main);
+  color: var(--nau-dark);
+  background: var(--nau-light-gray);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.fb-textarea::placeholder {
+  color: var(--nau-gray);
+}
+
+.fb-textarea:focus {
+  border-color: var(--nau-orange);
+  background: var(--nau-white);
+}
+
+/* === Кнопка отправки (использует класс nau-btn-primary из Dashboard) === */
+.fb-submit {
+  width: auto;
+  min-width: 220px;
+  margin: 8px auto 0;
+  padding: 12px 32px;
+}
+
+.fb-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === Экран успеха (в стиле MoodWidget) === */
+.mood-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 0;
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+.mood-success h4 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--nau-dark);
+  margin: 8px 0 0;
+}
+
+.mood-success p {
+  font-size: 15px;
+  color: var(--nau-gray);
+  margin: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
