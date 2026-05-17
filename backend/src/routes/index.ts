@@ -24,6 +24,8 @@ import {
   deleteTemplate,
   updateMentor,
   getEmployeePlan,
+  getTemplateById,
+  updateTemplate,
 } from "../controllers/hr.controller";
 import {
   jiraWebhook,
@@ -58,7 +60,6 @@ router.get("/gamification/leaderboard", authMiddleware, getLeaderboard);
 //HR Panel
 router.get("/hr/analytics", authMiddleware, getAnalytics);
 router.get("/hr/templates", authMiddleware, getTemplates);
-router.post("/hr/templates", authMiddleware, createTemplate);
 router.post("/hr/users/:id/assign-plan", authMiddleware, assignPlan);
 router.patch("/hr/users/:id/plan/tasks/:taskId", authMiddleware, hrUpdateTask);
 router.get("/hr/feedbacks", authMiddleware, getFeedbacks);
@@ -66,6 +67,9 @@ router.get("/hr/employees", authMiddleware, getEmployees);
 router.delete("/hr/templates/:id", authMiddleware, deleteTemplate);
 router.get("/hr/employees/:id/plan", authMiddleware, getEmployeePlan);
 router.patch("/hr/employees/:id/plan", authMiddleware, updateMentor);
+router.post("/hr/templates", authMiddleware, createTemplate);
+router.get("/hr/templates/:id", authMiddleware, getTemplateById);
+router.put("/hr/templates/:id", authMiddleware, updateTemplate);
 
 //Integration
 router.post("/webhooks/jira", jiraWebhook);

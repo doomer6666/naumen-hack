@@ -54,24 +54,6 @@ export const getTemplates = async (
   }
 };
 
-export const createTemplate = async (
-  req: AuthRequest,
-  res: Response,
-): Promise<void> => {
-  if (!isHR(req, res)) return;
-  const { name, description, duration_days } = req.body;
-  try {
-    const result = await pool.query(
-      `INSERT INTO Onboarding_Templates (name, description, duration_days, created_by) 
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [name, description, duration_days, req.user?.id],
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (error) {
-    res.status(500).json({ message: "Ошибка создания шаблона" });
-  }
-};
-
 export const assignPlan = async (
   req: AuthRequest,
   res: Response,
@@ -280,5 +262,170 @@ export const updateMentor = async (
     res.json({ message: "Наставник обновлен" });
   } catch (error) {
     res.status(500).json({ message: "Ошибка обновления наставника" });
+  }
+};
+
+export const createTemplate = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  if (!isHR(req, res)) return;
+  const { name, description, duration_days, stages } = req.body;
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const templRes = await client.query(
+      `INSERT INTO Onboarding_Templates (id, name, description, duration_days, is_active) 
+       VALUES (gen_random_uuid(), $1, $2, $3, true) RETURNING id`,
+      [name, description || "", duration_days || 30],
+    );
+    const templateId = templRes.rows[0].id;
+
+    if (stages && stages.length > 0) {
+      for (let i = 0; i < stages.length; i++) {
+        const stage = stages[i];
+        const stageRes = await client.query(
+          `INSERT INTO Template_Stages (id, template_id, title, order_index, start_day, end_day) 
+           VALUES (gen_random_uuid(), $1, $2, $3, $4, $5) RETURNING id`,
+          [
+            templateId,
+            stage.title,
+            i + 1,
+            stage.start_day || 1,
+            stage.end_day || 7,
+          ],
+        );
+        const stageId = stageRes.rows[0].id;
+
+        if (stage.tasks && stage.tasks.length > 0) {
+          for (let j = 0; j < stage.tasks.length; j++) {
+            const task = stage.tasks[j];
+            await client.query(
+              `INSERT INTO Template_Tasks (id, stage_id, title, description, type, order_index, jira_summary) 
+               VALUES (gen_random_uuid(), $1, $2, $3, 'task', $4, $5)`,
+              [
+                stageId,
+                task.title,
+                task.deadline || "",
+                j + 1,
+                task.jiraTemplate || null,
+              ],
+            );
+          }
+        }
+      }
+    }
+
+    await client.query("COMMIT");
+    res.status(201).json({ id: templateId });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Ошибка создания шаблона:", error);
+    res.status(500).json({ message: "Ошибка создания шаблона" });
+  } finally {
+    client.release();
+  }
+};
+
+// Получить шаблон по ID (с этапами и задачами)
+export const getTemplateById = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  if (!isHR(req, res)) return;
+  const { id } = req.params;
+  try {
+    const templRes = await pool.query(
+      "SELECT * FROM Onboarding_Templates WHERE id = $1",
+      [id],
+    );
+    if (templRes.rows.length === 0) {
+      res.status(404).json({ message: "Шаблон не найден" });
+      return;
+    }
+
+    const stagesRes = await pool.query(
+      `SELECT * FROM Template_Stages WHERE template_id = $1 ORDER BY order_index`,
+      [id],
+    );
+
+    const tasksRes = await pool.query(
+      `SELECT tt.* FROM Template_Tasks tt 
+       JOIN Template_Stages ts ON tt.stage_id = ts.id 
+       WHERE ts.template_id = $1 ORDER BY ts.order_index, tt.order_index`,
+      [id],
+    );
+
+    const stages = stagesRes.rows.map((s) => ({
+      ...s,
+      tasks: tasksRes.rows.filter((t) => t.stage_id === s.id),
+    }));
+
+    res.json({ ...templRes.rows[0], stages });
+  } catch (error) {
+    console.error("Ошибка получения шаблона:", error);
+    res.status(500).json({ message: "Ошибка получения шаблона" });
+  }
+};
+
+// Полное обновление шаблона (удаление старых этапов/задач и вставка новых)
+export const updateTemplate = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  if (!isHR(req, res)) return;
+  const { id } = req.params;
+  const { name, description, duration_days, stages } = req.body;
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    await client.query(
+      `UPDATE Onboarding_Templates SET name = $1, description = $2, duration_days = $3 WHERE id = $4`,
+      [name, description, duration_days, id],
+    );
+
+    // Удаляем старые этапы (каскадно удалятся и задачи)
+    await client.query(`DELETE FROM Template_Stages WHERE template_id = $1`, [
+      id,
+    ]);
+
+    // Вставляем новые этапы и задачи
+    for (let i = 0; i < stages.length; i++) {
+      const stage = stages[i];
+      const stageRes = await client.query(
+        `INSERT INTO Template_Stages (id, template_id, title, order_index, start_day, end_day) 
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5) RETURNING id`,
+        [id, stage.title, i + 1, stage.start_day || 1, stage.end_day || 7],
+      );
+      const stageId = stageRes.rows[0].id;
+
+      for (let j = 0; j < stage.tasks.length; j++) {
+        const task = stage.tasks[j];
+        await client.query(
+          `INSERT INTO Template_Tasks (id, stage_id, title, description, type, order_index, jira_summary) 
+           VALUES (gen_random_uuid(), $1, $2, $3, 'task', $4, $5)`,
+          [
+            stageId,
+            task.title,
+            task.deadline || "",
+            j + 1,
+            task.jiraTemplate || null,
+          ],
+        );
+      }
+    }
+
+    await client.query("COMMIT");
+    res.json({ message: "Шаблон обновлен" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Ошибка обновления шаблона:", error);
+    res.status(500).json({ message: "Ошибка обновления шаблона" });
+  } finally {
+    client.release();
   }
 };
