@@ -6,12 +6,15 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+*.exe
+*.dll
+*.so
+*.dylib
 node_modules
 dist
 dist-ssr
 *.local
-
+backend/package-lock.json
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +25,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+backend/.env

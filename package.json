@@ -1,0 +1,27 @@
+{
+  "name": "naumen-hack",
+  "version": "1.0.0",
+  "description": "Сервис адаптации новых сотрудников в компании Naumen",
+  "scripts": {
+    "start": "run-p start:backend start:frontend",
+    "start:backend": "cd backend && npm run dev",
+    "start:frontend": "cd frontend && npm run dev"
+  },
+  "workspaces": [
+    "common",
+    "backend",
+    "frontend"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doomer6666/naumen-hack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/doomer6666/naumen-hack/issues"
+  },
+  "homepage": "https://github.com/doomer6666/naumen-hack#readme"
+}
