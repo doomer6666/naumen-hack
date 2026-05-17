@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoute"; // Импортируем гарды
 import AppLayout from "./components/common/AppLayout";
 import LoginPage from "./pages/LoginPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
@@ -22,39 +23,51 @@ const App: React.FC = () => {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Публичный маршрут */}
-          <Route path="/login" element={<LoginPage />} />
+          {/* === ПУБЛИЧНЫЙ МАРШРУТ === */}
+          {/* Если пользователь авторизован, его не пустит на /login (перекинет на его дашборд) */}
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<LoginPage />} />
+          </Route>
 
-          {/* Защищенные маршруты */}
-          <Route element={<AppLayout />}>
-            <Route path="/profile" element={<ProfilePage />} />
+          {/* === ЗАЩИЩЕННЫЕ МАРШРУТЫ === */}
+          {/* Проверяем, авторизован ли пользователь вообще. Если нет -> /login */}
+          <Route element={<ProtectedRoute allowedRoles={["newbie", "hr", "mentor"]} />}>
+            
+            {/* Оборачиваем в AppLayout (сайдбар, хедер и т.д.) */}
+            <Route element={<AppLayout />}>
+              
+              {/* Общие страницы (доступны всем авторизованным) */}
+              <Route path="/profile" element={<ProfilePage />} />
 
-            {/*Сотрудник*/}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/plan" element={<PlanPage />} />
-            <Route path="/directory" element={<DirectoryPage />} />
-            <Route path="/feedback" element={<PlaceholderPage />} />
-            <Route path="/achievements" element={<AchievementsPage />} />
+              {/* --- Сотрудник (newbie) --- */}
+              {/* Допускаем только роль "newbie", остальных кидает на их дашборд */}
+              <Route element={<ProtectedRoute allowedRoles={["newbie"]} />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/plan" element={<PlanPage />} />
+                <Route path="/directory" element={<DirectoryPage />} />
+                <Route path="/feedback" element={<PlaceholderPage />} />
+                <Route path="/achievements" element={<AchievementsPage />} />
+              </Route>
 
-            {/*HR*/}
-            <Route path="/hr/dashboard" element={<HrDashboard />} />
-            <Route path="/hr/templates" element={<HrTemplates />} />
-            <Route
-              path="/hr/templates/:id/edit"
-              element={<HrTemplateEditor />}
-            />
-            <Route path="/hr/employees" element={<HrEmployees />} />
-            <Route path="/hr/employees/:id/plan" element={<HrEmployeePlan />} />
-            <Route path="/hr/feedbacks" element={<HrFeedbacks />} />
-            <Route path="/hr/integrations" element={<PlaceholderPage />} />
-            <Route path="/hr/settings" element={<PlaceholderPage />} />
+              {/* --- HR --- */}
+              <Route element={<ProtectedRoute allowedRoles={["hr"]} />}>
+                <Route path="/hr/dashboard" element={<HrDashboard />} />
+                <Route path="/hr/templates" element={<HrTemplates />} />
+                <Route path="/hr/templates/:id/edit" element={<HrTemplateEditor />} />
+                <Route path="/hr/employees" element={<HrEmployees />} />
+                <Route path="/hr/employees/:id/plan" element={<HrEmployeePlan />} />
+                <Route path="/hr/feedbacks" element={<HrFeedbacks />} />
+                <Route path="/hr/integrations" element={<PlaceholderPage />} />
+                <Route path="/hr/settings" element={<PlaceholderPage />} />
+              </Route>
 
-            {/*Ментор*/}
-            <Route path="/mentor/my-mentees" element={<MenteesList />} />
-            <Route
-              path="/mentor/my-mentees/:id/progress"
-              element={<PlanPage />}
-            />
+              {/* --- Ментор --- */}
+              <Route element={<ProtectedRoute allowedRoles={["mentor"]} />}>
+                <Route path="/mentor/my-mentees" element={<MenteesList />} />
+                <Route path="/mentor/my-mentees/:id/progress" element={<PlanPage />} />
+              </Route>
+
+            </Route>
           </Route>
 
           {/* Редирект по умолчанию */}

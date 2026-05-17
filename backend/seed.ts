@@ -9,7 +9,7 @@ async function seed() {
 
     await pool.query(
       `
-      INSERT INTO Users (email, password_hash, full_name, role, position) 
+      INSERT INTO Users (email, password_hash, name, role, position) 
       VALUES 
         ('ivan@naumen.ru', $1, 'Иван Смирнов', 'newbie', 'Java Разработчик'),
         ('elena@naumen.ru', $1, 'Елена Иванова', 'hr', 'HR Менеджер'),
