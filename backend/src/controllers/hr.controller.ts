@@ -1,8 +1,8 @@
 import { Response } from "express";
 import pool from "../config/db";
 import { AuthRequest } from "../middleware/authMiddleware";
+import { createJiraTicket } from "./jira.service";
 
-// Проверка роли
 const isHR = (req: AuthRequest, res: Response): boolean => {
   if (req.user?.role !== "hr" && req.user?.role !== "admin") {
     res.status(403).json({ message: "Доступ запрещен" });
@@ -46,11 +46,11 @@ export const getTemplates = async (
   if (!isHR(req, res)) return;
   try {
     const result = await pool.query(
-      "SELECT * FROM Onboarding_Templates ORDER BY created_at DESC",
+      "SELECT * FROM Onboarding_Templates ORDER BY id ASC",
     );
     res.json(result.rows);
   } catch (error) {
-    res.status(500).json({ message: "Ошибка получения шаблонов" });
+    res.status(500).json({ message: error });
   }
 };
 
@@ -72,40 +72,53 @@ export const createTemplate = async (
   }
 };
 
-// Назначить план сотруднику
 export const assignPlan = async (
   req: AuthRequest,
   res: Response,
 ): Promise<void> => {
   if (!isHR(req, res)) return;
-  const { id: userId } = req.params; // ID сотрудника
+  const { id: userId } = req.params;
   const { template_id, mentor_id } = req.body;
 
   try {
-    // 1. Создаем план
     const planRes = await pool.query(
-      `INSERT INTO User_Plans (user_id, template_id, mentor_id, status) 
-       VALUES ($1, $2, $3, 'in_progress') RETURNING id`,
+      `INSERT INTO User_Plans (user_id, template_id, mentor_id, status) VALUES ($1, $2, $3, 'in_progress') RETURNING id`,
       [userId, template_id, mentor_id || null],
     );
     const planId = planRes.rows[0].id;
 
-    // 2. Копируем все задачи из шаблона в User_Tasks
-    await pool.query(
-      `INSERT INTO User_Tasks (user_plan_id, template_task_id, status)
-       SELECT $1, tt.id, 'pending'
-       FROM Template_Tasks tt
-       JOIN Template_Stages ts ON tt.stage_id = ts.id
-       WHERE ts.template_id = $2`,
-      [planId, template_id],
+    const tasksRes = await pool.query(
+      `SELECT tt.id, tt.title, tt.description, tt.jira_summary FROM Template_Tasks tt JOIN Template_Stages ts ON tt.stage_id = ts.id WHERE ts.template_id = $1`,
+      [template_id],
     );
 
-    res.status(201).json({ message: "План назначен", plan_id: planId });
+    let jiraTicketsCreated = 0;
+    for (const task of tasksRes.rows) {
+      let jiraIssueKey = null;
+      if (task.jira_summary) {
+        jiraIssueKey = await createJiraTicket(
+          task.jira_summary,
+          task.description || task.title,
+        );
+        if (jiraIssueKey) jiraTicketsCreated++;
+      }
+      await pool.query(
+        `INSERT INTO User_Tasks (user_plan_id, template_task_id, status, jira_issue_key) VALUES ($1, $2, 'pending', $3)`,
+        [planId, task.id, jiraIssueKey],
+      );
+    }
+
+    // Возвращаем информацию о создании тикетов
+    res.status(201).json({
+      message: "План назначен",
+      plan_id: planId,
+      jira_tickets_created: jiraTicketsCreated,
+    });
   } catch (error) {
+    console.error("Ошибка назначения плана:", error);
     res.status(500).json({ message: "Ошибка назначения плана" });
   }
 };
-
 // Выгрузка фидбеков
 export const getFeedbacks = async (
   req: AuthRequest,
@@ -139,5 +152,133 @@ export const hrUpdateTask = async (
     res.json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ message: "Ошибка обновления задачи HR-ом" });
+  }
+};
+
+export const getEmployees = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  if (!isHR(req, res)) return;
+  try {
+    const result = await pool.query(
+      `SELECT u.id, u.name, u.position, u.email, 
+              up.status as plan_status, up.start_date,
+              m.name as mentor_name
+       FROM Users u
+       LEFT JOIN User_Plans up ON u.id = up.user_id AND up.status IN ('in_progress', 'completed')
+       LEFT JOIN Users m ON up.mentor_id = m.id
+       WHERE u.role = 'newbie'
+       ORDER BY u.name`,
+    );
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ message: "Ошибка получения сотрудников" });
+  }
+};
+
+export const deleteTemplate = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  if (!isHR(req, res)) return;
+  const { id } = req.params;
+  try {
+    await pool.query("DELETE FROM Onboarding_Templates WHERE id = $1", [id]);
+    res.json({ message: "Шаблон удален" });
+  } catch (error) {
+    res.status(500).json({ message: "Ошибка удаления шаблона" });
+  }
+};
+
+export const getEmployeePlan = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  if (!isHR(req, res)) return;
+  const { id: userId } = req.params;
+
+  try {
+    const planRes = await pool.query(
+      `SELECT id, mentor_id, status FROM User_Plans WHERE user_id = $1 AND status = 'in_progress'`,
+      [userId],
+    );
+
+    if (planRes.rows.length === 0) {
+      res.status(404).json({ message: "План не найден" });
+      return;
+    }
+
+    const plan = planRes.rows[0];
+
+    // Получаем имя наставника
+    let mentorName = null;
+    if (plan.mentor_id) {
+      const mentorRes = await pool.query(
+        "SELECT name FROM Users WHERE id = $1",
+        [plan.mentor_id],
+      );
+      if (mentorRes.rows.length > 0) mentorName = mentorRes.rows[0].name;
+    }
+
+    // Получаем задачи вместе с ключами Jira
+    const tasksRes = await pool.query(
+      `SELECT ut.id as user_task_id, tt.title, tt.description, ut.status, ut.jira_issue_key, ts.title as stage_title, ts.order_index
+       FROM User_Tasks ut
+       JOIN Template_Tasks tt ON ut.template_task_id = tt.id
+       JOIN Template_Stages ts ON tt.stage_id = ts.id
+       WHERE ut.user_plan_id = $1
+       ORDER BY ts.order_index, tt.order_index`,
+      [plan.id],
+    );
+
+    // Группируем задачи по этапам для фронтенда
+    const stagesMap = new Map();
+    tasksRes.rows.forEach((task: any) => {
+      if (!stagesMap.has(task.stage_title)) {
+        stagesMap.set(task.stage_title, {
+          id: task.stage_title,
+          title: task.stage_title,
+          isOpen: true,
+          tasks: [],
+        });
+      }
+      stagesMap.get(task.stage_title).tasks.push({
+        ...task,
+        isCompleted: task.status === "done",
+        deadline: task.description || "—",
+      });
+    });
+
+    res.json({
+      plan_id: plan.id,
+      mentor_id: plan.mentor_id,
+      mentor_name: mentorName,
+      status: plan.status,
+      stages: Array.from(stagesMap.values()),
+    });
+  } catch (error) {
+    console.error("Ошибка получения плана сотрудника:", error);
+    res.status(500).json({ message: "Ошибка получения плана" });
+  }
+};
+
+// Обновить наставника
+export const updateMentor = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  if (!isHR(req, res)) return;
+  const { id: userId } = req.params;
+  const { mentor_id } = req.body;
+
+  try {
+    await pool.query(
+      `UPDATE User_Plans SET mentor_id = $1 WHERE user_id = $2 AND status = 'in_progress'`,
+      [mentor_id || null, userId],
+    );
+    res.json({ message: "Наставник обновлен" });
+  } catch (error) {
+    res.status(500).json({ message: "Ошибка обновления наставника" });
   }
 };

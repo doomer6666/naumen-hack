@@ -1,13 +1,26 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, User, Calendar, Plus, Trash2, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
-import './HrEmployeePlan.css';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Save,
+  User,
+  Calendar,
+  GripVertical,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  ExternalLink,
+} from "lucide-react";
+import apiClient from "../../api/client";
+import "./HrEmployeePlan.css";
 
 interface Task {
-  id: string;
+  user_task_id: string;
   title: string;
   deadline: string;
   isCompleted: boolean;
+  jira_issue_key?: string | null;
 }
 
 interface Stage {
@@ -18,221 +31,301 @@ interface Stage {
 }
 
 const HrEmployeePlan: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: userId } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [mentor, setMentor] = useState('Иван Петров');
-  
-  const [stages, setStages] = useState<Stage[]>([
-    {
-      id: 's1',
-      title: 'Day 1: Первые шаги',
-      isOpen: true,
-      tasks: [
-        { id: 't1', title: 'Выдать доступы к CRM', deadline: 'Day 1', isCompleted: true },
-        { id: 't2', title: 'Познакомить с командой', deadline: 'Day 1', isCompleted: true },
-      ],
-    },
-    {
-      id: 's2',
-      title: 'Day 7: Погружение',
-      isOpen: true,
-      tasks: [
-        { id: 't3', title: 'Пройти курс по продукту', deadline: 'Day 7', isCompleted: false },
-        { id: 't4', title: 'Контрольная точка с ментором', deadline: 'Day 7', isCompleted: false },
-      ],
-    },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("Сотрудник");
+  const [mentorName, setMentorName] = useState("");
+  const [mentorId, setMentorId] = useState("");
+  const [status, setStatus] = useState("");
+  const [stages, setStages] = useState<Stage[]>([]);
+  const [mentorsList, setMentorsList] = useState<any[]>([]);
+  const [isEditingMentor, setIsEditingMentor] = useState(false);
 
-  // Состояния для Drag-and-Drop
-  const [draggedStageId, setDraggedStageId] = useState<string | null>(null);
-  const [draggedTaskInfo, setDraggedTaskInfo] = useState<{ stageId: string; taskId: string } | null>(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const empRes = await apiClient.get("/hr/employees");
+        const emp = empRes.data.find((e: any) => e.id === userId);
+        if (emp) setUserName(emp.name);
+
+        const planRes = await apiClient.get(`/hr/employees/${userId}/plan`);
+        const planData = planRes.data;
+
+        setMentorName(planData.mentor_name || "Не назначен");
+        setMentorId(planData.mentor_id || "");
+        setStatus(
+          planData.status === "in_progress" ? "В процессе" : planData.status,
+        );
+        setStages(planData.stages || []);
+
+        const dirRes = await apiClient.get("/directory/users");
+        setMentorsList(dirRes.data.filter((u: any) => u.role !== "newbie"));
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          setStatus("Нет плана");
+        } else {
+          console.error("Ошибка загрузки плана:", error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId) fetchData();
+  }, [userId]);
 
   const toggleStage = (stageId: string) => {
-    setStages(stages.map(s => s.id === stageId ? { ...s, isOpen: !s.isOpen } : s));
+    setStages(
+      stages.map((s) => (s.id === stageId ? { ...s, isOpen: !s.isOpen } : s)),
+    );
   };
 
-  const addTask = (stageId: string) => {
-    const newTask: Task = { id: `t${Date.now()}`, title: 'Новая задача', deadline: 'Day 14', isCompleted: false };
-    setStages(stages.map(s => s.id === stageId ? { ...s, tasks: [...s.tasks, newTask] } : s));
+  const toggleTask = async (
+    stageId: string,
+    taskId: string,
+    currentState: boolean,
+  ) => {
+    const newStatus = currentState ? "pending" : "done";
+    try {
+      await apiClient.patch(`/hr/users/${userId}/plan/tasks/${taskId}`, {
+        status: newStatus,
+      });
+      setStages(
+        stages.map((s) =>
+          s.id === stageId
+            ? {
+                ...s,
+                tasks: s.tasks.map((t) =>
+                  t.user_task_id === taskId
+                    ? { ...t, isCompleted: !currentState }
+                    : t,
+                ),
+              }
+            : s,
+        ),
+      );
+    } catch (error) {
+      console.error("Ошибка обновления задачи:", error);
+      alert("Ошибка обновления задачи");
+    }
   };
 
-  const toggleTask = (stageId: string, taskId: string) => {
-    setStages(stages.map(s => 
-      s.id === stageId 
-        ? { ...s, tasks: s.tasks.map(t => t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t) } 
-        : s
-    ));
+  const handleSaveMentor = async () => {
+    try {
+      await apiClient.patch(`/hr/employees/${userId}/plan`, {
+        mentor_id: mentorId,
+      });
+      const mentor = mentorsList.find((m: any) => m.id === mentorId);
+      setMentorName(mentor ? mentor.name : "Не назначен");
+      setIsEditingMentor(false);
+    } catch (error) {
+      console.error("Ошибка сохранения наставника:", error);
+      alert("Ошибка сохранения наставника");
+    }
   };
 
-  // --- Удаление ---
-  const deleteStage = (stageId: string) => {
-    setStages(stages.filter(s => s.id !== stageId));
-  };
-
-  const deleteTask = (stageId: string, taskId: string) => {
-    setStages(stages.map(s => 
-      s.id === stageId ? { ...s, tasks: s.tasks.filter(t => t.id !== taskId) } : s
-    ));
-  };
-
-  // --- Логика перетаскивания этапов ---
-  const handleStageDragStart = (e: React.DragEvent<HTMLDivElement>, stageId: string) => {
-    setDraggedStageId(stageId);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleStageDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleStageDrop = (e: React.DragEvent<HTMLDivElement>, targetStageId: string) => {
-    e.preventDefault();
-    if (!draggedStageId || draggedStageId === targetStageId) return;
-
-    const updatedStages = [...stages];
-    const draggedIndex = updatedStages.findIndex(s => s.id === draggedStageId);
-    const targetIndex = updatedStages.findIndex(s => s.id === targetStageId);
-
-    const [removed] = updatedStages.splice(draggedIndex, 1);
-    updatedStages.splice(targetIndex, 0, removed);
-
-    setStages(updatedStages);
-    setDraggedStageId(null);
-  };
-
-  // --- Логика перетаскивания задач ---
-  const handleTaskDragStart = (e: React.DragEvent<HTMLDivElement>, stageId: string, taskId: string) => {
-    setDraggedTaskInfo({ stageId, taskId });
-    e.dataTransfer.effectAllowed = 'move';
-    e.stopPropagation(); // Чтобы не сработал drag этапа
-  };
-
-  const handleTaskDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    e.stopPropagation();
-  };
-
-  const handleTaskDrop = (e: React.DragEvent<HTMLDivElement>, targetStageId: string, targetTaskId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!draggedTaskInfo || (draggedTaskInfo.stageId === targetStageId && draggedTaskInfo.taskId === targetTaskId)) return;
-
-    const updatedStages = [...stages].map(s => ({ ...s, tasks: [...s.tasks] }));
-    const sourceStage = updatedStages.find(s => s.id === draggedTaskInfo.stageId);
-    const targetStage = updatedStages.find(s => s.id === targetStageId);
-
-    if (!sourceStage || !targetStage) return;
-
-    const draggedTaskIndex = sourceStage.tasks.findIndex(t => t.id === draggedTaskInfo.taskId);
-    const [draggedTask] = sourceStage.tasks.splice(draggedTaskIndex, 1);
-
-    const targetTaskIndex = targetStage.tasks.findIndex(t => t.id === targetTaskId);
-    targetStage.tasks.splice(targetTaskIndex, 0, draggedTask);
-
-    setStages(updatedStages);
-    setDraggedTaskInfo(null);
-  };
+  if (loading) {
+    return (
+      <div
+        style={{ display: "flex", justifyContent: "center", padding: "40px" }}
+      >
+        <Loader2 size={40} className="spinner" />
+      </div>
+    );
+  }
 
   return (
     <div className="hr-emp-plan">
       <div className="hr-editor-header">
-        <button className="hr-icon-btn-lg" onClick={() => navigate('/hr/employees')}>
+        <button
+          className="hr-icon-btn-lg"
+          onClick={() => navigate("/hr/employees")}
+        >
           <ArrowLeft size={20} />
         </button>
         <div className="hr-emp-plan-title">
-          <h1 className="page-title">План: Алексей Смирнов</h1>
-          <span className="task-tag status-delayed" style={{ alignSelf: 'center' }}>Отстает</span>
+          <h1 className="page-title">План: {userName}</h1>
+          <span
+            className={`task-tag ${status === "В процессе" ? "status-adapting" : "status-delayed"}`}
+            style={{ alignSelf: "center" }}
+          >
+            {status}
+          </span>
         </div>
-        <button className="hr-btn-primary">
-          <Save size={18} />
-          Сохранить
-        </button>
       </div>
 
       <div className="widget hr-emp-mentor-card">
         <div className="hr-emp-mentor-label">Наставник</div>
         <div className="hr-emp-mentor-select">
           <User size={20} color="var(--nau-orange)" />
-          <input 
-            type="text" 
-            value={mentor} 
-            onChange={(e) => setMentor(e.target.value)}
-            className="hr-input-inline"
-          />
+          {isEditingMentor ? (
+            <>
+              <select
+                value={mentorId}
+                onChange={(e) => setMentorId(e.target.value)}
+                className="hr-input"
+                style={{ flex: 1, padding: "8px" }}
+              >
+                <option value="">Не назначен</option>
+                {mentorsList.map((m: any) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="hr-btn-primary"
+                style={{ padding: "8px 12px" }}
+                onClick={handleSaveMentor}
+              >
+                <Save size={16} />
+              </button>
+              <button
+                className="hr-icon-btn"
+                onClick={() => setIsEditingMentor(false)}
+              >
+                <XIcon size={16} />
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="font-semibold text-dark">{mentorName}</span>
+              <button
+                className="hr-icon-btn"
+                onClick={() => setIsEditingMentor(true)}
+              >
+                <User size={16} />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       <div className="hr-editor-stages">
-        {stages.map((stage) => (
-          <div 
-            key={stage.id} 
-            className={`hr-stage-card ${draggedStageId === stage.id ? 'dragging' : ''}`}
-            draggable
-            onDragStart={(e) => handleStageDragStart(e, stage.id)}
-            onDragOver={handleStageDragOver}
-            onDrop={(e) => handleStageDrop(e, stage.id)}
-          >
-            <div className="hr-stage-header" onClick={() => toggleStage(stage.id)}>
-              <div className="hr-stage-drag"><GripVertical size={20} color="var(--nau-gray)" /></div>
-              <div className="hr-stage-info">
-                <h3>{stage.title}</h3>
-                <span className="widget-subtitle">{stage.tasks.filter(t => t.isCompleted).length} / {stage.tasks.length} выполнено</span>
-              </div>
-              <div className="hr-stage-actions">
-                <button className="hr-icon-btn" onClick={(e) => { e.stopPropagation(); deleteStage(stage.id); }}>
-                  <Trash2 size={16} />
-                </button>
-                {stage.isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-            </div>
-
-            {stage.isOpen && (
-              <div className="hr-stage-content">
-                {stage.tasks.map((task) => (
-                  <div 
-                    key={task.id} 
-                    className={`hr-task-card ${task.isCompleted ? 'completed' : ''} ${draggedTaskInfo?.taskId === task.id ? 'dragging' : ''}`}
-                    draggable
-                    onDragStart={(e) => handleTaskDragStart(e, stage.id, task.id)}
-                    onDragOver={handleTaskDragOver}
-                    onDrop={(e) => handleTaskDrop(e, stage.id, task.id)}
-                  >
-                    <div className="hr-task-drag"><GripVertical size={16} color="var(--nau-gray)" /></div>
-                    <button className="hr-checkbox" onClick={() => toggleTask(stage.id, task.id)}>
-                      {task.isCompleted && <CheckIcon />}
-                    </button>
-                    <div className="hr-task-content">
-                      <span className="hr-task-title">{task.title}</span>
-                      <span className="task-tag today-tag">
-                        <Calendar size={12} style={{ marginRight: '4px' }} />
-                        {task.deadline}
-                      </span>
-                    </div>
-                    <button className="hr-icon-btn" onClick={() => deleteTask(stage.id, task.id)}>
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-                <button className="hr-add-task-btn" onClick={() => addTask(stage.id)}>
-                  <Plus size={16} />
-                  Добавить задачу
-                </button>
-              </div>
-            )}
+        {stages.length === 0 ? (
+          <div className="widget text-center text-gray p-4">
+            Задачи не найдены
           </div>
-        ))}
+        ) : (
+          stages.map((stage) => (
+            <div key={stage.id} className="hr-stage-card">
+              <div
+                className="hr-stage-header"
+                onClick={() => toggleStage(stage.id)}
+              >
+                <div className="hr-stage-drag">
+                  <GripVertical size={20} color="var(--nau-gray)" />
+                </div>
+                <div className="hr-stage-info">
+                  <h3>{stage.title}</h3>
+                  <span className="widget-subtitle">
+                    {stage.tasks.filter((t) => t.isCompleted).length} /{" "}
+                    {stage.tasks.length} выполнено
+                  </span>
+                </div>
+                <div className="hr-stage-actions">
+                  {stage.isOpen ? (
+                    <ChevronUp size={20} />
+                  ) : (
+                    <ChevronDown size={20} />
+                  )}
+                </div>
+              </div>
+
+              {stage.isOpen && (
+                <div className="hr-stage-content">
+                  {stage.tasks.map((task) => (
+                    <div
+                      key={task.user_task_id}
+                      className={`hr-task-card ${task.isCompleted ? "completed" : ""}`}
+                    >
+                      <div className="hr-task-drag">
+                        <GripVertical size={16} color="var(--nau-gray)" />
+                      </div>
+                      <button
+                        className="hr-checkbox"
+                        onClick={() =>
+                          toggleTask(
+                            stage.id,
+                            task.user_task_id,
+                            task.isCompleted,
+                          )
+                        }
+                      >
+                        {task.isCompleted && <CheckIcon />}
+                      </button>
+                      <div className="hr-task-content">
+                        <span className="hr-task-title">{task.title}</span>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "8px",
+                            alignItems: "center",
+                            marginTop: "4px",
+                          }}
+                        >
+                          <span className="task-tag today-tag">
+                            <Calendar
+                              size={12}
+                              style={{ marginRight: "4px" }}
+                            />
+                            {task.deadline}
+                          </span>
+                          {task.jira_issue_key && (
+                            <a
+                              href={`https://your-domain.atlassian.net/browse/${task.jira_issue_key}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="task-tag hr-jira-tag"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ExternalLink size={12} /> {task.jira_issue_key}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
 };
 
-// Микро-компонент для галочки
 const CheckIcon: React.FC = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--nau-white)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="var(--nau-white)"
+    strokeWidth="3"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+const XIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
   </svg>
 );
 

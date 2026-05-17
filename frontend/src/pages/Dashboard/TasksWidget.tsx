@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Square, CheckSquare, Loader2, AlertCircle } from "lucide-react";
+import {
+  Square,
+  CheckSquare,
+  Loader2,
+  AlertCircle,
+  ExternalLink,
+} from "lucide-react";
 import apiClient from "../../api/client";
 
 interface ApiTask {
   user_task_id: string;
-  task_id: string;
   title: string;
   description: string;
-  type: string;
-  status: "pending" | "in_progress" | "done" | "blocked";
-  order_index: number;
+  status: "pending" | "in_progress" | "done";
+  jira_issue_key?: string | null;
 }
 
 const TasksWidget: React.FC = () => {
@@ -26,17 +30,12 @@ const TasksWidget: React.FC = () => {
   const fetchTasks = async () => {
     try {
       const res = await apiClient.get("/plans/my");
-      const sortedTasks = res.data.tasks.sort(
-        (a: ApiTask, b: ApiTask) => a.order_index - b.order_index,
-      );
-      setTasks(sortedTasks);
+      setTasks(res.data.tasks);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      if (err.response?.status === 404) {
+      if (err.response?.status === 404)
         setError("План адаптации еще не назначен HR-ом");
-      } else {
-        setError("Не удалось загрузить задачи");
-      }
+      else setError("Не удалось загрузить задачи");
     } finally {
       setLoading(false);
     }
@@ -44,48 +43,34 @@ const TasksWidget: React.FC = () => {
 
   const handleToggleTask = async (task: ApiTask) => {
     if (updatingId || task.status === "done") return;
-
     setUpdatingId(task.user_task_id);
-    const newStatus = task.status === "pending" ? "done" : "done"; // Пока что только отмечаем выполненным
 
     try {
       await apiClient.patch(`/plans/my/tasks/${task.user_task_id}`, {
-        status: newStatus,
+        status: "done",
       });
-
-      // Обновляем локальный стейт
       setTasks((prev) =>
         prev.map((t) =>
-          t.user_task_id === task.user_task_id
-            ? { ...t, status: newStatus }
-            : t,
+          t.user_task_id === task.user_task_id ? { ...t, status: "done" } : t,
         ),
       );
-    } catch (error) {
-      console.error("Ошибка обновления задачи:", error);
+    } catch {
       alert("Не удалось обновить статус задачи");
     } finally {
       setUpdatingId(null);
     }
   };
 
-  if (loading) {
+  if (loading)
     return (
       <div
         className="widget"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "200px",
-        }}
+        style={{ display: "flex", justifyContent: "center", padding: "40px" }}
       >
         <Loader2 size={32} className="spinner" />
       </div>
     );
-  }
-
-  if (error) {
+  if (error)
     return (
       <div className="widget">
         <div className="widget-title">Следующие шаги</div>
@@ -101,7 +86,6 @@ const TasksWidget: React.FC = () => {
         </div>
       </div>
     );
-  }
 
   return (
     <div className="widget">
@@ -115,7 +99,6 @@ const TasksWidget: React.FC = () => {
           tasks.map((task) => {
             const isDone = task.status === "done";
             const isUpdating = updatingId === task.user_task_id;
-
             return (
               <div
                 key={task.user_task_id}
@@ -128,16 +111,15 @@ const TasksWidget: React.FC = () => {
                   style={{
                     borderColor: isDone ? "var(--success)" : undefined,
                     backgroundColor: isDone ? "var(--success)" : undefined,
-                    color: isDone ? "white" : "transparent",
                     cursor: isUpdating ? "wait" : "pointer",
                   }}
                 >
                   {isUpdating ? (
-                    <Loader2 size={16} className="spinner" />
+                    <Loader2 size={14} className="spinner" />
                   ) : isDone ? (
-                    <CheckSquare size={18} />
+                    <CheckSquare size={14} color="white" />
                   ) : (
-                    <Square size={18} />
+                    <Square size={14} />
                   )}
                 </div>
                 <div className="task-info">
@@ -146,15 +128,37 @@ const TasksWidget: React.FC = () => {
                   >
                     {task.title}
                   </h4>
-                  <p>{task.description}</p>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                      alignItems: "center",
+                      marginTop: "4px",
+                    }}
+                  >
+                    {task.description && (
+                      <span className="text-gray text-sm">
+                        {task.description}
+                      </span>
+                    )}
+                    {task.jira_issue_key && (
+                      <a
+                        href={`https://${process.env.REACT_APP_JIRA_DOMAIN || "your-domain.atlassian.net"}/browse/${task.jira_issue_key}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="task-tag hr-jira-tag"
+                        style={{ margin: 0, textDecoration: "none" }}
+                      >
+                        <ExternalLink size={10} /> {task.jira_issue_key}
+                      </a>
+                    )}
+                  </div>
                 </div>
-                <div className={`task-tag ${isDone ? "" : "today-tag"}`}>
-                  {isDone
-                    ? "Выполнено"
-                    : task.type === "milestone"
-                      ? "Веха"
-                      : "В процессе"}
-                </div>
+                {isUpdating && task.jira_issue_key && (
+                  <span className="text-sm text-gray">
+                    Отправляем в Jira...
+                  </span>
+                )}
               </div>
             );
           })

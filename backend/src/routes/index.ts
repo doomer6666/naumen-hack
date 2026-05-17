@@ -20,12 +20,17 @@ import {
   assignPlan,
   getFeedbacks,
   hrUpdateTask,
+  getEmployees,
+  deleteTemplate,
+  updateMentor,
+  getEmployeePlan,
 } from "../controllers/hr.controller";
 import {
   jiraWebhook,
   jiraConnect,
 } from "../controllers/integration.controller";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { getMyMentees } from "../controllers/mentor.controller";
 
 const router = Router();
 
@@ -57,9 +62,16 @@ router.post("/hr/templates", authMiddleware, createTemplate);
 router.post("/hr/users/:id/assign-plan", authMiddleware, assignPlan);
 router.patch("/hr/users/:id/plan/tasks/:taskId", authMiddleware, hrUpdateTask);
 router.get("/hr/feedbacks", authMiddleware, getFeedbacks);
+router.get("/hr/employees", authMiddleware, getEmployees);
+router.delete("/hr/templates/:id", authMiddleware, deleteTemplate);
+router.get("/hr/employees/:id/plan", authMiddleware, getEmployeePlan);
+router.patch("/hr/employees/:id/plan", authMiddleware, updateMentor);
 
 //Integration
 router.post("/webhooks/jira", jiraWebhook);
 router.get("/integrations/jira/connect", authMiddleware, jiraConnect);
+
+// === Mentor ===
+router.get("/mentor/my-mentees", authMiddleware, getMyMentees);
 
 export default router;
