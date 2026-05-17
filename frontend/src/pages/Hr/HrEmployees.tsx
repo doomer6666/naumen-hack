@@ -72,7 +72,6 @@ export const HrEmployees: React.FC = () => {
         template_id: selectedTemplate,
         mentor_id: selectedMentor || null,
       });
-      // Убрали alert, просто закрываем и обновляем данные
       setIsAssignOpen(false);
       fetchEmployees();
     } catch (err: any) {
@@ -114,49 +113,115 @@ export const HrEmployees: React.FC = () => {
     );
 
   return (
-    <div className="hr-employees">
-      <div className="hr-employees-header">
-        <h1 className="page-title">Управление сотрудниками</h1>
+    <>
+      {/* Основной контент страницы */}
+      <div className="hr-employees">
+        <div className="hr-employees-header">
+          <h1 className="page-title">Управление сотрудниками</h1>
+        </div>
+
+        {isInviteOpen && (
+          <div className="widget hr-invite-form">
+            <div className="hr-invite-header">
+              <h3>Отправить инвайт</h3>
+              <button
+                className="hr-icon-btn"
+                onClick={() => setIsInviteOpen(false)}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                alert(`Инвайт отправлен на: ${inviteEmail}`);
+                setIsInviteOpen(false);
+              }}
+              className="hr-invite-body"
+            >
+              <div className="hr-templates-search">
+                <Mail size={18} color="var(--nau-gray)" />
+                <input
+                  type="email"
+                  placeholder="email@naumen.ru"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="hr-input"
+                  required
+                />
+              </div>
+              <button type="submit" className="hr-btn-primary">
+                Отправить
+              </button>
+            </form>
+          </div>
+        )}
+
+        <div className="widget">
+          <div className="hr-templates-search">
+            <Search size={18} color="var(--nau-gray)" />
+            <input
+              type="text"
+              placeholder="Поиск..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="hr-input"
+            />
+          </div>
+          <div className="hr-emp-table">
+            <div className="hr-emp-table-header">
+              <span>Сотрудник</span>
+              <span>Статус</span>
+              <span>Наставник</span>
+              <span>Действия</span>
+            </div>
+            {employees
+              .filter((e) => e.name.toLowerCase().includes(search.toLowerCase()))
+              .map((emp) => {
+                const status = getStatusConfig(emp.plan_status);
+                return (
+                  <div
+                    key={emp.id}
+                    className="hr-emp-row"
+                    style={{ cursor: emp.plan_status ? "pointer" : "default" }}
+                    onClick={() =>
+                      emp.plan_status
+                        ? (window.location.href = `/hr/employees/${emp.id}/plan`)
+                        : undefined
+                    }
+                  >
+                    <div className="hr-emp-user">
+                      <div className="avatar">{emp.name.charAt(0)}</div>
+                      <div className="hr-emp-info">
+                        <h4>{emp.name}</h4>
+                        <p>
+                          {emp.position || "—"} · {emp.email}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <span className={`task-tag ${status.className}`}>
+                        {status.icon} {status.label}
+                      </span>
+                    </div>
+                    <div className="hr-emp-mentor">{emp.mentor_name || "—"}</div>
+                    <div>
+                      <button
+                        className="hr-btn-primary"
+                        style={{ padding: "6px 12px", fontSize: "13px" }}
+                        onClick={(e) => openAssignModal(e, emp)}
+                      >
+                        {emp.plan_status ? "Переназначить" : "Назначить план"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
       </div>
 
-      {isInviteOpen && (
-        <div className="widget hr-invite-form">
-          <div className="hr-invite-header">
-            <h3>Отправить инвайт</h3>
-            <button
-              className="hr-icon-btn"
-              onClick={() => setIsInviteOpen(false)}
-            >
-              <X size={18} />
-            </button>
-          </div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert(`Инвайт отправлен на: ${inviteEmail}`);
-              setIsInviteOpen(false);
-            }}
-            className="hr-invite-body"
-          >
-            <div className="hr-templates-search">
-              <Mail size={18} color="var(--nau-gray)" />
-              <input
-                type="email"
-                placeholder="email@naumen.ru"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                className="hr-input"
-                required
-              />
-            </div>
-            <button type="submit" className="hr-btn-primary">
-              Отправить
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* Оверлей и модалка переназначения */}
+      {/* Оверлей и модалка ВЫНЕСЕНЫ за пределы .hr-employees */}
       {isAssignOpen && assigningUser && (
         <>
           <div
@@ -220,77 +285,13 @@ export const HrEmployees: React.FC = () => {
                 {assigning ? (
                   <Loader2 size={18} className="spinner" />
                 ) : null}
-                {/* Убрали галочку CheckCircle */}
                 {assigning ? "Создаем тикеты Jira..." : "Назначить план"}
               </button>
             </div>
           </div>
         </>
       )}
-
-      <div className="widget">
-        <div className="hr-templates-search">
-          <Search size={18} color="var(--nau-gray)" />
-          <input
-            type="text"
-            placeholder="Поиск..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="hr-input"
-          />
-        </div>
-        <div className="hr-emp-table">
-          <div className="hr-emp-table-header">
-            <span>Сотрудник</span>
-            <span>Статус</span>
-            <span>Наставник</span>
-            <span>Действия</span>
-          </div>
-          {employees
-            .filter((e) => e.name.toLowerCase().includes(search.toLowerCase()))
-            .map((emp) => {
-              const status = getStatusConfig(emp.plan_status);
-              return (
-                <div
-                  key={emp.id}
-                  className="hr-emp-row"
-                  style={{ cursor: emp.plan_status ? "pointer" : "default" }}
-                  onClick={() =>
-                    emp.plan_status
-                      ? (window.location.href = `/hr/employees/${emp.id}/plan`)
-                      : undefined
-                  }
-                >
-                  <div className="hr-emp-user">
-                    <div className="avatar">{emp.name.charAt(0)}</div>
-                    <div className="hr-emp-info">
-                      <h4>{emp.name}</h4>
-                      <p>
-                        {emp.position || "—"} · {emp.email}
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <span className={`task-tag ${status.className}`}>
-                      {status.icon} {status.label}
-                    </span>
-                  </div>
-                  <div className="hr-emp-mentor">{emp.mentor_name || "—"}</div>
-                  <div>
-                    <button
-                      className="hr-btn-primary"
-                      style={{ padding: "6px 12px", fontSize: "13px" }}
-                      onClick={(e) => openAssignModal(e, emp)}
-                    >
-                      {emp.plan_status ? "Переназначить" : "Назначить план"}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 

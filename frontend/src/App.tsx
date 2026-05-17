@@ -4,7 +4,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoute"; // Импортируем гарды
 import AppLayout from "./components/common/AppLayout";
 import LoginPage from "./pages/LoginPage";
-import PlaceholderPage from "./pages/PlaceholderPage";
+// import PlaceholderPage from "./pages/PlaceholderPage";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import { PlanPage } from "./pages/Plan/Plan";
 import { DirectoryPage } from "./pages/Directory/Directory";
@@ -66,8 +66,6 @@ const App: React.FC = () => {
                   element={<HrEmployeePlan />}
                 />
                 <Route path="/hr/feedbacks" element={<HrFeedbacks />} />
-                <Route path="/hr/integrations" element={<PlaceholderPage />} />
-                <Route path="/hr/settings" element={<PlaceholderPage />} />
               </Route>
 
               {/* --- Ментор --- */}

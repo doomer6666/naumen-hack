@@ -7,9 +7,6 @@ import {
   Calendar,
   Lock,
   MessageSquare,
-  Phone,
-  CheckSquare,
-  Circle,
   Loader2,
   AlertCircle,
   Award,
@@ -165,34 +162,18 @@ export const EmployeeCabinet: React.FC = () => {
             plan.tasks.map((task: any) => (
               <div
                 key={task.user_task_id}
-                className={`task-item flex-col gap-12 ${task.status !== "done" ? "active" : ""}`}
+                className={`task-item flex-col gap-12 ${task.status === "done" ? "task-done" : "active"}`}
               >
                 <div className="task-info w-full">
                   <div className="flex-row align-center gap-8">
-                    <div
-                      className="task-checkbox"
-                      onClick={() => toggleTask(task.user_task_id, task.status)}
-                    >
-                      {task.status === "done" ? (
-                        <CheckSquare size={14} color="white" />
-                      ) : (
-                        <Circle size={14} />
-                      )}
-                    </div>
-                    <h4
-                      className={`m-0 ${task.status === "done" ? "text-gray" : "text-dark"}`}
-                      style={{
-                        textDecoration:
-                          task.status === "done" ? "line-through" : "none",
-                      }}
-                    >
+                    <h4 className={`m-0 ${task.status === "done" ? "text-gray" : "text-dark"}`}>
                       {task.title}
                     </h4>
                   </div>
                   {task.description && (
                     <p
                       className="m-0 text-sm text-gray mt-2"
-                      style={{ paddingLeft: "24px" }}
+                      style={{ paddingLeft: "0px" }}
                     >
                       {task.description}
                     </p>
@@ -233,9 +214,6 @@ export const EmployeeCabinet: React.FC = () => {
               <div className="flex-row gap-8">
                 <button className="mood-btn icon-only">
                   <MessageSquare size={18} />
-                </button>
-                <button className="mood-btn icon-only">
-                  <Phone size={18} />
                 </button>
               </div>
             </div>

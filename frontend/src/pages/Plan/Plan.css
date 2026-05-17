@@ -60,7 +60,6 @@
     transition: all 0.3s ease;
 }
 
-/* Отрисовка галочки для выполненного этапа внутри кружка */
 .timeline-stage.completed .stage-node {
     background-color: var(--success);
     border-color: var(--success);
@@ -168,7 +167,6 @@
     box-shadow: none;
 }
 
-/* === ЧЕКБОКС С ГАЛОЧКОЙ === */
 .task-checkbox {
     width: 20px;
     height: 20px;
@@ -192,7 +190,6 @@
     border-color: var(--success);
 }
 
-/* Отрисовка белой галочки внутри */
 .task-checkbox.checked::after {
     content: '';
     display: block;
@@ -204,13 +201,11 @@
     margin-bottom: 2px;
 }
 
-/* Состояния Disabled для чекбокса */
 .task-checkbox.disabled {
     cursor: not-allowed;
     opacity: 0.6;
 }
 
-/* Непрозрачность для неактивных задач */
 .disabled-item .task-info {
     opacity: 0.8;
 }
@@ -233,7 +228,6 @@
 
 .timeline-stage.completed .milestone-block {
     background: #e8f7f0;
-    /* Очень светлый зеленый */
     border: 1px solid var(--success);
 }
 
@@ -295,4 +289,98 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.mentor-review-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.review-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+}
+
+.mentor-review-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hr-review-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: var(--nau-light-gray);
+  border: 1px solid var(--nau-border);
+  border-radius: 6px;
+  padding: 8px 32px 8px 12px;
+  font-size: 13px;
+  font-family: var(--font-main);
+  color: var(--nau-dark);
+  cursor: pointer;
+  outline: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 140px;
+}
+
+.hr-review-select:hover {
+  border-color: var(--nau-orange);
+}
+
+.hr-review-select:focus {
+  border-color: var(--nau-orange);
+  background-color: var(--nau-white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ff6720' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+.review-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.review-btn.accept {
+  background: var(--success);
+  color: white;
+  border-color: var(--success);
+}
+
+.review-btn.accept:hover:not(:disabled) {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.review-btn.return {
+  background: transparent;
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.review-btn.return:hover:not(:disabled) {
+  background: #fde8e8;
+}
+
+.review-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

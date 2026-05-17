@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
-  Target,
   CheckCircle,
   Clock,
   BookOpen,
-  MessageCircle,
   Loader2,
   AlertCircle,
   Smile,
@@ -13,9 +11,10 @@ import {
   ExternalLink,
   XCircle,
   Check,
+  Users,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/client";
+import "./MentorCabinet.css";
 
 interface Mentee {
   id: string;
@@ -44,8 +43,6 @@ const getMoodIcon = (score: number | null) => {
 };
 
 export const MentorCabinet: React.FC = () => {
-  const navigate = useNavigate();
-
   const [mentees, setMentees] = useState<Mentee[]>([]);
   const [stats, setStats] = useState({ active: 0, completed: 0 });
 
@@ -151,7 +148,7 @@ export const MentorCabinet: React.FC = () => {
                   </div>
                   <div
                     className="task-info flex-col justify-center"
-                    style={{ marginLeft: "12px", minWidth: "220px" }}
+                    style={{ marginLeft: "12px", flex: 1 }}
                   >
                     <h4
                       style={{ fontSize: "16px", margin: "0 0 4px 0" }}
@@ -163,40 +160,21 @@ export const MentorCabinet: React.FC = () => {
                       {mentee.position || "Сотрудник"}
                     </p>
                     <div className="flex-row align-center gap-12 mt-3">
-                      <div className="progress-bar-container">
+                      <div className="progress-bar-container" style={{ flex: 1 }}>
                         <div
                           className={`progress-bar-fill ${isLagging ? "warning" : ""}`}
                           style={{ width: `${progress}%` }}
                         />
                       </div>
-                      <span className="font-semibold text-gray text-sm">
-                        {progress}% ({done}/{total})
+                      <span className="font-semibold text-gray text-sm" style={{ minWidth: "40px" }}>
+                        {progress}%
                       </span>
-                    </div>
-                  </div>
-                  <div className="flex-col gap-12 align-end ml-auto">
-                    <div className="flex-row gap-8 align-center">
-                      {getMoodIcon(mentee.latest_mood)}
-                      <span className="text-sm text-gray">
-                        Пульс:{" "}
-                        {mentee.latest_mood
-                          ? `${mentee.latest_mood}/10`
-                          : "Нет данных"}
-                      </span>
-                    </div>
-                    <div className="flex-row gap-8">
-                      <button
-                        className="mood-btn auto-width selected flex-row align-center gap-8"
-                        onClick={() => navigate(`/hr/mentee/${mentee.id}/plan`)}
-                      >
-                        <Target size={16} /> <span>План развития</span>
-                      </button>
-                      <button
-                        className="mood-btn icon-only"
-                        onClick={() => alert(`Написать: ${mentee.name}`)}
-                      >
-                        <MessageCircle size={16} />
-                      </button>
+                      <div className="flex-row gap-4 align-center" style={{ minWidth: "80px" }}>
+                        {getMoodIcon(mentee.latest_mood)}
+                        <span className="text-sm text-gray">
+                          {mentee.latest_mood ? `${mentee.latest_mood}/10` : "—"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -212,7 +190,7 @@ export const MentorCabinet: React.FC = () => {
           <span className="widget-subtitle">{reviewTasks.length} ожидают</span>
         </div>
         <div className="task-list">
-          {reviewTasks.length === 0 ? (
+          {reviewTasks.length !== 0 ? (
             <div className="text-center p-4 text-gray text-sm">
               <CheckCircle
                 size={32}
@@ -317,38 +295,49 @@ export const MentorCabinet: React.FC = () => {
         </div>
       </div>
 
+      {/* Блок Мой вклад */}
       <div className="widget">
-        <div className="widget-title">Мой вклад</div>
-        <div className="badges-list align-center h-full gap-24">
-          <div className="badge-item">
+        <div className="widget-title">
+          Мой вклад
+          <span className="widget-subtitle">Результаты вашей работы наставником</span>
+        </div>
+        <div className="contrib-cards">
+          <div className="contrib-card">
             <div className="badge-icon blue">
-              <CheckCircle size={28} />
+              <CheckCircle size={22} />
             </div>
-            <div className="mt-2">
-              <strong className="font-bold text-dark text-lg block">
-                {stats.completed}
-              </strong>
-              <span className="badge-title">Выпущено</span>
+            <div className="contrib-info">
+              <div className="contrib-top">
+                <span className="contrib-value">{stats.completed}</span>
+                <span className="contrib-label">Выпущено</span>
+              </div>
+              <p className="contr-desc">Сотрудников завершили адаптацию с вашей помощью</p>
             </div>
           </div>
-          <div className="badge-item">
+
+          <div className="contrib-card">
+            <div className="badge-icon green">
+              <BookOpen size={22} />
+            </div>
+            <div className="contrib-info">
+              <div className="contrib-top">
+                <span className="contrib-value">{stats.active}</span>
+                <span className="contrib-label">В процессе</span>
+              </div>
+              <p className="contr-desc">Сейчас находятся на вашем попечении</p>
+            </div>
+          </div>
+
+          <div className="contrib-card">
             <div className="badge-icon gold">
-              <Clock size={28} />
+              <Users size={22} />
             </div>
-            <div className="mt-2">
-              <strong className="font-bold text-dark text-lg block">—</strong>
-              <span className="badge-title">Потрачено</span>
-            </div>
-          </div>
-          <div className="badge-item">
-            <div className="badge-icon locked">
-              <BookOpen size={28} />
-            </div>
-            <div className="mt-2">
-              <strong className="font-bold text-dark text-lg block">
-                {stats.active}
-              </strong>
-              <span className="badge-title">Обучаются</span>
+            <div className="contrib-info">
+              <div className="contrib-top">
+                <span className="contrib-value">{stats.completed + stats.active}</span>
+                <span className="contrib-label">Всего</span>
+              </div>
+              <p className="contr-desc">Прошли через ваше наставничество</p>
             </div>
           </div>
         </div>
