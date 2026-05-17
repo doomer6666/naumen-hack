@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from "react";
 import {
   Target,
-  BookOpen,
+  Heart,
+  Rocket,
+  Calendar,
   Lock,
   MessageSquare,
   Phone,
@@ -15,12 +17,18 @@ import {
 import apiClient from "../../api/client";
 import MoodWidget from "../Dashboard/MoodWidget";
 
+const iconMap: Record<string, React.ElementType> = {
+  target: Target,
+  heart: Heart,
+  rocket: Rocket,
+  calendar: Calendar,
+};
+
 export const EmployeeCabinet: React.FC = () => {
   const [plan, setPlan] = useState<any>(null);
   const [gamification, setGamification] = useState<any>(null);
   const [mentor, setMentor] = useState<any>(null);
 
-  // UI состояния
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,11 +55,7 @@ export const EmployeeCabinet: React.FC = () => {
                 parts.length > 1
                   ? (parts[0][0] + parts[1][0]).toUpperCase()
                   : mentorData.name.substring(0, 2).toUpperCase();
-              setMentor({
-                ...mentorData,
-                initials,
-                relation: "Наставник",
-              });
+              setMentor({ ...mentorData, initials, relation: "Наставник" });
             }
           }
         }
@@ -72,17 +76,17 @@ export const EmployeeCabinet: React.FC = () => {
 
   const toggleTask = async (taskId: string, currentStatus: string) => {
     if (currentStatus === "done") return;
-
     try {
-      await apiClient.patch(`/plans/my/tasks/${taskId}`, {
-        status: "done",
-      });
+      await apiClient.patch(`/plans/my/tasks/${taskId}`, { status: "done" });
       setPlan((prev: any) => ({
         ...prev,
         tasks: prev.tasks.map((t: any) =>
           t.user_task_id === taskId ? { ...t, status: "done" } : t,
         ),
       }));
+      // Обновляем геймификацию, чтобы сразу увидеть новый бейдж, если он выдан
+      const gamRes = await apiClient.get("/gamification/my-progress");
+      if (gamRes.data) setGamification(gamRes.data);
     } catch (err) {
       console.error("Ошибка обновления задачи:", err);
     }
@@ -117,6 +121,7 @@ export const EmployeeCabinet: React.FC = () => {
   const currentLevel = gamification?.level || 1;
   const totalXp = gamification?.xp || 0;
   const badges = gamification?.badges || [];
+  const earnedCount = badges.filter((b: any) => b.earned).length;
 
   return (
     <div className="dashboard-grid">
@@ -166,12 +171,6 @@ export const EmployeeCabinet: React.FC = () => {
                   <div className="flex-row align-center gap-8">
                     <div
                       className="task-checkbox"
-                      style={{
-                        borderColor:
-                          task.status === "done" ? "var(--success)" : undefined,
-                        backgroundColor:
-                          task.status === "done" ? "var(--success)" : undefined,
-                      }}
                       onClick={() => toggleTask(task.user_task_id, task.status)}
                     >
                       {task.status === "done" ? (
@@ -253,44 +252,36 @@ export const EmployeeCabinet: React.FC = () => {
       <div className="widget col-span-2">
         <div className="widget-title">
           Достижения
-          <span className="widget-subtitle">Собрано: {badges.length}</span>
+          <span className="widget-subtitle">
+            Собрано: {earnedCount}/{badges.length}
+          </span>
         </div>
         <div className="badges-list">
-          {badges.length > 0 ? (
-            badges.map((badge: any) => (
-              <div key={badge.id} className="badge-item">
-                <div className="badge-icon gold">
-                  <Award size={28} />
+          {badges.map((badge: any) => {
+            const IconComponent = iconMap[badge.icon_url] || Award;
+            return (
+              <div
+                key={badge.id}
+                className="badge-item"
+                style={{ opacity: badge.earned ? 1 : 0.4 }}
+              >
+                <div
+                  className={`badge-icon ${badge.earned ? "gold" : "locked"}`}
+                >
+                  {badge.earned ? (
+                    <IconComponent size={28} />
+                  ) : (
+                    <Lock size={28} />
+                  )}
                 </div>
-                <span className="badge-title text-dark mt-2">{badge.name}</span>
+                <span
+                  className={`badge-title mt-2 ${badge.earned ? "text-dark" : "text-gray"}`}
+                >
+                  {badge.name}
+                </span>
               </div>
-            ))
-          ) : (
-            <div className="text-center w-full p-4 text-gray text-sm col-span-2">
-              <Lock size={32} style={{ margin: "0 auto 8px" }} />
-              <p>
-                Пока нет достижений. Выполняйте задачи, чтобы получить первые
-                бейджи!
-              </p>
-            </div>
-          )}
-
-          {badges.length === 0 && (
-            <>
-              <div className="badge-item" style={{ opacity: 0.3 }}>
-                <div className="badge-icon locked">
-                  <Target size={28} />
-                </div>
-                <span className="badge-title text-gray mt-2">???</span>
-              </div>
-              <div className="badge-item" style={{ opacity: 0.3 }}>
-                <div className="badge-icon locked">
-                  <BookOpen size={28} />
-                </div>
-                <span className="badge-title text-gray mt-2">???</span>
-              </div>
-            </>
-          )}
+            );
+          })}
         </div>
       </div>
     </div>

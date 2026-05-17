@@ -2,7 +2,35 @@ import { Response } from "express";
 import pool from "../config/db";
 import { AuthRequest } from "../middleware/authMiddleware";
 
-// Получить свой план
+const awardBadge = async (userId: string, conditionType: string) => {
+  try {
+    const badgeRes = await pool.query(
+      "SELECT id, xp_reward FROM Badges WHERE condition_type = $1",
+      [conditionType],
+    );
+
+    if (badgeRes.rows.length > 0) {
+      const badge = badgeRes.rows[0];
+      const inserted = await pool.query(
+        `INSERT INTO User_Badges (user_id, badge_id) 
+         VALUES ($1, $2) 
+         ON CONFLICT (user_id, badge_id) DO NOTHING
+         RETURNING *`,
+        [userId, badge.id],
+      );
+
+      if (inserted.rows.length > 0) {
+        await pool.query(
+          `UPDATE User_Plans SET total_xp = total_xp + $1 WHERE user_id = $2`,
+          [badge.xp_reward, userId],
+        );
+      }
+    }
+  } catch (err) {
+    console.error("Ошибка начисления бейджа:", err);
+  }
+};
+
 export const getMyPlan = async (
   req: AuthRequest,
   res: Response,
@@ -37,7 +65,6 @@ export const getMyPlan = async (
   }
 };
 
-// Обновить статус своей задачи
 export const updateMyTask = async (
   req: AuthRequest,
   res: Response,
@@ -58,12 +85,31 @@ export const updateMyTask = async (
       return;
     }
 
-    // Начисление XP за выполнение задачи
     if (status === "done") {
       await pool.query(
         `UPDATE User_Plans SET total_xp = total_xp + 10 WHERE user_id = $1`,
         [req.user?.id],
       );
+
+      const stats = await pool.query(
+        `SELECT 
+           COUNT(*) FILTER (WHERE ut.status = 'done') as done_count,
+           COUNT(*) as total_count
+         FROM User_Tasks ut
+         JOIN User_Plans up ON ut.user_plan_id = up.id
+         WHERE up.user_id = $1`,
+        [req.user?.id],
+      );
+
+      const doneCount = parseInt(stats.rows[0].done_count, 10);
+      const totalCount = parseInt(stats.rows[0].total_count, 10);
+
+      if (doneCount >= 1) {
+        await awardBadge(req.user!.id, "task_count_1");
+      }
+      if (doneCount === totalCount && totalCount > 0) {
+        await awardBadge(req.user!.id, "tasks_all_done");
+      }
     }
 
     res.json(result.rows[0]);

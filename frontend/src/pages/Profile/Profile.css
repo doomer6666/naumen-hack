@@ -279,14 +279,13 @@
     background: var(--warning);
 }
 
-/* === ЧЕКБОКС (Исправленный с галочкой) === */
 .task-checkbox {
     width: 18px;
     height: 18px;
     border-radius: 4px;
     border: 2px solid var(--nau-border);
     background: var(--nau-white);
-    cursor: pointer;
+    cursor: not-allowed;
     display: flex;
     align-items: center;
     justify-content: center;

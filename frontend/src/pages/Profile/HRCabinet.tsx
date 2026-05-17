@@ -1,171 +1,149 @@
-import React, { useState } from "react";
-import { AlertTriangle, UserPlus, Layout, MailWarning } from "lucide-react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect } from "react";
+import {
+  Users,
+  AlertTriangle,
+  FileText,
+  Plus,
+  Loader2,
+  Smile,
+  Meh,
+  Frown,
+} from "lucide-react";
+import apiClient from "../../api/client";
 
-interface HRAnalytics {
-  avgTime: string;
-  onTrackPercent: number;
-  engagementIndex: number;
-}
-
-interface RiskEmployee {
-  id: string;
-  name: string;
-  role: string;
-  reason: string;
-  daysDelayed: number;
-}
-
-const ANALYTICS_MOCK: HRAnalytics = {
-  avgTime: "2.5 месяца",
-  onTrackPercent: 78,
-  engagementIndex: 8.4,
+const getMoodIcon = (score: number) => {
+  if (score >= 8)
+    return <Smile size={18} style={{ color: "var(--success)" }} />;
+  if (score >= 5)
+    return <Meh size={18} style={{ color: "var(--nau-orange)" }} />;
+  return <Frown size={18} style={{ color: "var(--danger)" }} />;
 };
 
-const INITIAL_RISK_MOCK: RiskEmployee[] = [
-  {
-    id: "1",
-    name: "Илья Петров",
-    role: "Инженер инфраструктуры",
-    reason: "Нет доступов к рабочим серверам",
-    daysDelayed: 4,
-  },
-  {
-    id: "2",
-    name: "Анна Ким",
-    role: "Дизайнер интерфейсов",
-    reason: "Низкая оценка в еженедельном опросе",
-    daysDelayed: 0,
-  },
-];
-
-const TEMPLATES_MOCK = [
-  { id: "t1", title: "Разработчик (Уверенный специалист)", tasks: 24 },
-  { id: "t2", title: "Специалист по продажам", tasks: 15 },
-];
-
 export const HRCabinet: React.FC = () => {
-  const [risks, setRisks] = useState<RiskEmployee[]>(INITIAL_RISK_MOCK);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Имитация разрешения проблемы сотрудника
-  const handleResolveRisk = (id: string) => {
-    setRisks((prev) => prev.filter((r) => r.id !== id));
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [analRes, fbRes] = await Promise.allSettled([
+          apiClient.get("/hr/analytics"),
+          apiClient.get("/hr/feedbacks"),
+        ]);
+
+        if (analRes.status === "fulfilled") setAnalytics(analRes.value.data);
+        if (fbRes.status === "fulfilled")
+          setFeedbacks(fbRes.value.data.slice(0, 5));
+      } catch (error) {
+        console.error("Ошибка загрузки данных HR:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div
+        style={{ display: "flex", justifyContent: "center", padding: "40px" }}
+      >
+        <Loader2 size={40} className="spinner" />
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-grid">
       <div className="widget">
-        <div className="widget-title">Общая сводка</div>
-        <div className="progress-wrapper justify-between gap-20">
-          <div
-            className="progress-chart"
-            style={{
-              width: "100px",
-              height: "100px",
-              background: `conic-gradient(var(--success) ${ANALYTICS_MOCK.onTrackPercent}%, var(--nau-light-gray) 0)`,
-            }}
-          >
-            <div
-              className="progress-inner"
-              style={{ width: "76px", height: "76px" }}
+        <div className="widget-title">На контроле</div>
+        <div
+          className="progress-stats"
+          style={{ flexDirection: "column", gap: "16px" }}
+        >
+          <p style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>
+              <Users
+                size={16}
+                style={{ marginRight: "8px", verticalAlign: "middle" }}
+              />
+              В адаптации:
+            </span>
+            <strong>{analytics?.in_progress || 0} сотрудников</strong>
+          </p>
+          <p style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>
+              <AlertTriangle
+                size={16}
+                style={{
+                  marginRight: "8px",
+                  verticalAlign: "middle",
+                  color: "var(--danger)",
+                }}
+              />
+              Средний пульс:
+            </span>
+            <strong
+              style={{
+                color:
+                  Number(analytics?.avg_mood) >= 7
+                    ? "var(--success)"
+                    : "var(--danger)",
+              }}
             >
-              <span className="percent" style={{ fontSize: "20px" }}>
-                {ANALYTICS_MOCK.onTrackPercent}%
-              </span>
-              <span className="label" style={{ fontSize: "9px" }}>
-                В срок
-              </span>
-            </div>
-          </div>
-          <div className="stats-list">
-            <div className="stat-row">
-              <span className="stat-label">Среднее время:</span>
-              <strong className="stat-value">{ANALYTICS_MOCK.avgTime}</strong>
-            </div>
-            <div className="stat-row">
-              <span className="stat-label">Оценка вовлеченности:</span>
-              <strong className="stat-value text-success">
-                {ANALYTICS_MOCK.engagementIndex} / 10
-              </strong>
-            </div>
-          </div>
+              {analytics?.avg_mood || "Нет данных"} / 10
+            </strong>
+          </p>
+          <p style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Завершено:</span>
+            <strong>{analytics?.completed || 0} человек</strong>
+          </p>
         </div>
       </div>
 
       <div className="widget">
-        <div className="widget-title">Шаблоны адаптации</div>
-        <div className="mood-buttons mb-4">
+        <div className="widget-title">Быстрые действия</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <button
-            className="mood-btn row selected"
-            onClick={() => alert("Открытие модалки: Пригласить")}
+            className="mood-btn selected"
+            style={{ padding: "12px", flexDirection: "row", gap: "12px" }}
           >
-            <UserPlus size={18} />
-            <span>Пригласить</span>
+            <Plus size={18} /> Пригласить сотрудника
           </button>
           <button
-            className="mood-btn row"
-            onClick={() => alert("Открытие конструктора")}
+            className="mood-btn"
+            style={{ padding: "12px", flexDirection: "row", gap: "12px" }}
           >
-            <Layout size={18} />
-            <span>Создать</span>
+            <FileText size={18} /> Создать шаблон
           </button>
-        </div>
-        <div className="widget-subtitle mb-3">Популярные программы:</div>
-        <div className="task-list">
-          {TEMPLATES_MOCK.map((t) => (
-            <div
-              key={t.id}
-              className="task-item align-center justify-between p-3 cursor-pointer"
-            >
-              <span className="font-semibold text-dark text-sm">{t.title}</span>
-              <span className="text-gray text-sm">{t.tasks} задач</span>
-            </div>
-          ))}
         </div>
       </div>
 
-      <div className="widget col-span-2">
-        <div className="widget-title text-danger">
-          <div className="flex-row align-center gap-8">
-            <AlertTriangle size={20} /> Сотрудники в зоне риска
-          </div>
-          <span className="task-tag danger-tag">{risks.length} чел.</span>
+      <div className="widget" style={{ gridColumn: "span 2" }}>
+        <div className="widget-title">
+          Пульс команды
+          <span className="widget-subtitle">Последние ответы</span>
         </div>
-
         <div className="task-list">
-          {risks.length === 0 ? (
-            <div className="text-gray mt-2 font-semibold">
-              Все проблемы успешно разобраны! 🎉
-            </div>
+          {feedbacks.length === 0 ? (
+            <p className="text-gray text-sm text-center">
+              Пока никто не оставлял обратную связь
+            </p>
           ) : (
-            risks.map((emp) => (
-              <div
-                key={emp.id}
-                className="task-item danger align-center justify-between"
-              >
-                <div className="task-info">
-                  <h4 className="flex-row align-center gap-12 mb-2 m-0 text-dark">
-                    {emp.name}
-                    <span className="font-normal text-gray text-sm">
-                      {emp.role}
-                    </span>
-                  </h4>
-                  <p className="flex-row align-center gap-8 text-dark m-0">
-                    <MailWarning size={16} className="text-danger" />{" "}
-                    {emp.reason}
-                  </p>
+            feedbacks.map((fb: any) => (
+              <div key={fb.id} className="task-item today">
+                <div style={{ marginRight: "12px" }}>
+                  {getMoodIcon(fb.mood_score)}
                 </div>
-                <div className="flex-col gap-8 align-end">
-                  {emp.daysDelayed > 0 && (
-                    <div className="task-tag danger-filled">
-                      Просрочено на: {emp.daysDelayed} дн.
-                    </div>
-                  )}
-                  <button
-                    className="mood-btn auto-width"
-                    onClick={() => handleResolveRisk(emp.id)}
-                  >
-                    Разобрать ситуацию
-                  </button>
+                <div className="task-info">
+                  <h4>{fb.user_name || "Сотрудник"}</h4>
+                  <p>
+                    Оценка: {fb.mood_score}/10 • Доступы:{" "}
+                    {fb.has_access ? "✅ Есть" : "❌ Нет"}
+                    {fb.blockers && ` • Блокеры: ${fb.blockers}`}
+                  </p>
                 </div>
               </div>
             ))
@@ -175,3 +153,5 @@ export const HRCabinet: React.FC = () => {
     </div>
   );
 };
+
+export default HRCabinet;
