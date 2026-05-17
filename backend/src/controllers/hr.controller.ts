@@ -62,18 +62,34 @@ export const assignPlan = async (
   const { id: userId } = req.params;
   const { template_id, mentor_id } = req.body;
 
+  const client = await pool.connect();
   try {
-    const planRes = await pool.query(
-      `INSERT INTO User_Plans (user_id, template_id, mentor_id, status) VALUES ($1, $2, $3, 'in_progress') RETURNING id`,
+    await client.query("BEGIN");
+
+    // 1. Удаляем старый активный план (если он был). Каскадно удалятся и задачи.
+    await client.query(
+      `DELETE FROM User_Plans WHERE user_id = $1 AND status = 'in_progress'`,
+      [userId],
+    );
+
+    // 2. Создаем новый план
+    const planRes = await client.query(
+      `INSERT INTO User_Plans (id, user_id, template_id, mentor_id, status) 
+       VALUES (gen_random_uuid(), $1, $2, $3, 'in_progress') RETURNING id`,
       [userId, template_id, mentor_id || null],
     );
     const planId = planRes.rows[0].id;
 
-    const tasksRes = await pool.query(
-      `SELECT tt.id, tt.title, tt.description, tt.jira_summary FROM Template_Tasks tt JOIN Template_Stages ts ON tt.stage_id = ts.id WHERE ts.template_id = $1`,
+    // 3. Получаем задачи шаблона
+    const tasksRes = await client.query(
+      `SELECT tt.id, tt.title, tt.description, tt.jira_summary 
+       FROM Template_Tasks tt
+       JOIN Template_Stages ts ON tt.stage_id = ts.id
+       WHERE ts.template_id = $1`,
       [template_id],
     );
 
+    // 4. Создаем тикеты Jira и копируем задачи
     let jiraTicketsCreated = 0;
     for (const task of tasksRes.rows) {
       let jiraIssueKey = null;
@@ -84,23 +100,28 @@ export const assignPlan = async (
         );
         if (jiraIssueKey) jiraTicketsCreated++;
       }
-      await pool.query(
-        `INSERT INTO User_Tasks (user_plan_id, template_task_id, status, jira_issue_key) VALUES ($1, $2, 'pending', $3)`,
+      await client.query(
+        `INSERT INTO User_Tasks (user_plan_id, template_task_id, status, jira_issue_key)
+         VALUES ($1, $2, 'pending', $3)`,
         [planId, task.id, jiraIssueKey],
       );
     }
 
-    // Возвращаем информацию о создании тикетов
+    await client.query("COMMIT");
     res.status(201).json({
       message: "План назначен",
       plan_id: planId,
       jira_tickets_created: jiraTicketsCreated,
     });
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("Ошибка назначения плана:", error);
     res.status(500).json({ message: "Ошибка назначения плана" });
+  } finally {
+    client.release();
   }
 };
+
 // Выгрузка фидбеков
 export const getFeedbacks = async (
   req: AuthRequest,
@@ -143,18 +164,24 @@ export const getEmployees = async (
 ): Promise<void> => {
   if (!isHR(req, res)) return;
   try {
-    const result = await pool.query(
-      `SELECT u.id, u.name, u.position, u.email, 
-              up.status as plan_status, up.start_date,
-              m.name as mentor_name
-       FROM Users u
-       LEFT JOIN User_Plans up ON u.id = up.user_id AND up.status IN ('in_progress', 'completed')
-       LEFT JOIN Users m ON up.mentor_id = m.id
-       WHERE u.role = 'newbie'
-       ORDER BY u.name`,
-    );
+    const result = await pool.query(`
+      SELECT u.id, u.name, u.position, u.email, 
+             up.status as plan_status, up.start_date,
+             m.name as mentor_name
+      FROM Users u
+      LEFT JOIN LATERAL (
+        SELECT status, start_date, mentor_id 
+        FROM User_Plans 
+        WHERE user_id = u.id 
+        ORDER BY created_at DESC LIMIT 1
+      ) up ON true
+      LEFT JOIN Users m ON up.mentor_id = m.id
+      WHERE u.role = 'newbie'
+      ORDER BY u.name
+    `);
     res.json(result.rows);
   } catch (error) {
+    console.error("Ошибка получения сотрудников:", error);
     res.status(500).json({ message: "Ошибка получения сотрудников" });
   }
 };
@@ -177,10 +204,20 @@ export const getEmployeePlan = async (
   req: AuthRequest,
   res: Response,
 ): Promise<void> => {
-  if (!isHR(req, res)) return;
+  if (req.user?.role !== "hr" && req.user?.role !== "mentor") {
+    res.status(403).json({ message: "Нет доступа" });
+    return;
+  }
+
   const { id: userId } = req.params;
 
   try {
+    // Получаем имя сотрудника сразу
+    const userRes = await pool.query("SELECT name FROM Users WHERE id = $1", [
+      userId,
+    ]);
+    const userName = userRes.rows[0]?.name || "Сотрудник";
+
     const planRes = await pool.query(
       `SELECT id, mentor_id, status FROM User_Plans WHERE user_id = $1 AND status = 'in_progress'`,
       [userId],
@@ -193,7 +230,6 @@ export const getEmployeePlan = async (
 
     const plan = planRes.rows[0];
 
-    // Получаем имя наставника
     let mentorName = null;
     if (plan.mentor_id) {
       const mentorRes = await pool.query(
@@ -203,9 +239,8 @@ export const getEmployeePlan = async (
       if (mentorRes.rows.length > 0) mentorName = mentorRes.rows[0].name;
     }
 
-    // Получаем задачи вместе с ключами Jira
     const tasksRes = await pool.query(
-      `SELECT ut.id as user_task_id, tt.title, tt.description, ut.status, ut.jira_issue_key, ts.title as stage_title, ts.order_index
+      `SELECT ut.id as user_task_id, tt.title, tt.description, ut.status, ut.jira_issue_key, ut.mentor_comment, ts.title as stage_title, ts.order_index
        FROM User_Tasks ut
        JOIN Template_Tasks tt ON ut.template_task_id = tt.id
        JOIN Template_Stages ts ON tt.stage_id = ts.id
@@ -214,30 +249,14 @@ export const getEmployeePlan = async (
       [plan.id],
     );
 
-    // Группируем задачи по этапам для фронтенда
-    const stagesMap = new Map();
-    tasksRes.rows.forEach((task: any) => {
-      if (!stagesMap.has(task.stage_title)) {
-        stagesMap.set(task.stage_title, {
-          id: task.stage_title,
-          title: task.stage_title,
-          isOpen: true,
-          tasks: [],
-        });
-      }
-      stagesMap.get(task.stage_title).tasks.push({
-        ...task,
-        isCompleted: task.status === "done",
-        deadline: task.description || "—",
-      });
-    });
-
+    // ВАЖНО: добавляем user_name в ответ
     res.json({
       plan_id: plan.id,
       mentor_id: plan.mentor_id,
       mentor_name: mentorName,
       status: plan.status,
-      stages: Array.from(stagesMap.values()),
+      user_name: userName,
+      tasks: tasksRes.rows,
     });
   } catch (error) {
     console.error("Ошибка получения плана сотрудника:", error);

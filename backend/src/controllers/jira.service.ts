@@ -54,33 +54,42 @@ export const createJiraTicket = async (
   }
 };
 
-export const closeJiraTicket = async (issueKey: string): Promise<boolean> => {
+// Универсальная функция перемещения тикета
+export const transitionJiraTicket = async (
+  issueKey: string,
+  targetStatusName: string,
+): Promise<boolean> => {
   if (!JIRA_BASE_URL || !JIRA_API_TOKEN) return false;
   try {
+    // 1. Получаем доступные переходы
     const transitionsRes = await axios.get(
       `${JIRA_BASE_URL}/rest/api/3/issue/${issueKey}/transitions`,
       { headers: getAuthHeader() },
     );
 
     const transitions = transitionsRes.data.transitions;
-    const doneTransition = transitions.find((t: any) =>
-      ["done", "closed", "resolved"].includes(t.to?.name?.toLowerCase()),
+    // Ищем переход, чей целевой статус совпадает с targetStatusName (игнорируя регистр)
+    const targetTransition = transitions.find(
+      (t: any) => t.to?.name?.toLowerCase() === targetStatusName.toLowerCase(),
     );
 
-    if (doneTransition) {
+    if (targetTransition) {
+      // 2. Выполняем переход
       await axios.post(
         `${JIRA_BASE_URL}/rest/api/3/issue/${issueKey}/transitions`,
-        { transition: { id: doneTransition.id } },
+        { transition: { id: targetTransition.id } },
         { headers: getAuthHeader() },
       );
-      console.log(`Jira ticket ${issueKey} moved to Done`);
+      console.log(`Jira ticket ${issueKey} moved to ${targetStatusName}`);
       return true;
     }
-    console.warn(`No 'Done' transition found for ${issueKey}`);
+    console.warn(
+      `No '${targetStatusName}' transition found for ${issueKey}. Available: ${transitions.map((t: any) => t.to?.name).join(", ")}`,
+    );
     return false;
   } catch (error: any) {
     console.error(
-      `Error closing Jira ticket ${issueKey}:`,
+      `Error moving Jira ticket ${issueKey} to ${targetStatusName}:`,
       error.response?.data || error.message,
     );
     return false;

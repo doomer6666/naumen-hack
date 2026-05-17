@@ -1,7 +1,7 @@
 import { Response } from "express";
 import pool from "../config/db";
 import { AuthRequest } from "../middleware/authMiddleware";
-import { closeJiraTicket } from "./jira.service";
+import { transitionJiraTicket } from "./jira.service";
 
 const awardBadge = async (userId: string, conditionType: string) => {
   try {
@@ -51,12 +51,12 @@ export const getMyPlan = async (
     const plan = planRes.rows[0];
 
     const tasksRes = await pool.query(
-      `SELECT ut.id as user_task_id, tt.id as task_id, tt.title, tt.description, tt.type, ut.status, ut.jira_issue_key, ts.order_index
-      FROM User_Tasks ut
-      JOIN Template_Tasks tt ON ut.template_task_id = tt.id
-      JOIN Template_Stages ts ON tt.stage_id = ts.id
-      WHERE ut.user_plan_id = $1
-      ORDER BY ts.order_index, tt.order_index`,
+      `SELECT ut.id as user_task_id, tt.title, tt.description, ut.status, ut.jira_issue_key, ut.mentor_comment, ts.title as stage_title, ts.order_index
+   FROM User_Tasks ut
+   JOIN Template_Tasks tt ON ut.template_task_id = tt.id
+   JOIN Template_Stages ts ON tt.stage_id = ts.id
+   WHERE ut.user_plan_id = $1
+   ORDER BY ts.order_index, tt.order_index`,
       [plan.id],
     );
 
@@ -73,51 +73,53 @@ export const updateMyTask = async (
   const { taskId } = req.params;
   const { status } = req.body;
 
+  // Сотрудник может только отправить на проверку
+  if (status !== "in_review") {
+    res
+      .status(403)
+      .json({ message: "Вы можете только отправить задачу на проверку" });
+    return;
+  }
+
   try {
+    // Проверяем, что задача принадлежит этому сотруднику
     const taskInfoRes = await pool.query(
-      `SELECT jira_issue_key FROM User_Tasks WHERE id = $1`,
-      [taskId],
-    );
-    const jiraKey = taskInfoRes.rows[0]?.jira_issue_key;
-
-    const result = await pool.query(
-      `UPDATE User_Tasks SET status = $1, completed_at = CASE WHEN $1 = 'done' THEN NOW() ELSE NULL END 
-       WHERE id = $2 AND user_plan_id IN (SELECT id FROM User_Plans WHERE user_id = $3)
-       RETURNING *`,
-      [status, taskId, req.user?.id],
+      `SELECT ut.jira_issue_key, ut.status FROM User_Tasks ut
+       JOIN User_Plans up ON ut.user_plan_id = up.id
+       WHERE ut.id = $1 AND up.user_id = $2`,
+      [taskId, req.user?.id],
     );
 
-    if (result.rows.length === 0) {
+    if (taskInfoRes.rows.length === 0) {
       res.status(404).json({ message: "Задача не найдена" });
       return;
     }
 
-    if (status === "done") {
-      await pool.query(
-        `UPDATE User_Plans SET total_xp = total_xp + 10 WHERE user_id = $1`,
-        [req.user?.id],
-      );
+    if (taskInfoRes.rows[0].status !== "pending") {
+      res
+        .status(400)
+        .json({ message: "Задача уже отправлена на проверку или выполнена" });
+      return;
+    }
 
-      if (jiraKey) {
-        closeJiraTicket(jiraKey).then(() => {
-          console.log(`🔔 Jira ticket ${jiraKey} closing triggered by user`);
-        });
-      }
+    const jiraKey = taskInfoRes.rows[0].jira_issue_key;
 
-      const stats = await pool.query(
-        `SELECT COUNT(*) FILTER (WHERE ut.status = 'done') as done_count, COUNT(*) as total_count
-         FROM User_Tasks ut JOIN User_Plans up ON ut.user_plan_id = up.id WHERE up.user_id = $1`,
-        [req.user?.id],
+    // Обновляем статус
+    const result = await pool.query(
+      `UPDATE User_Tasks SET status = 'in_review', mentor_comment = NULL WHERE id = $1 RETURNING *`,
+      [taskId],
+    );
+
+    // Асинхронно двигаем тикет в Jira (не ломаем запрос, если Jira упала)
+    if (jiraKey) {
+      transitionJiraTicket(jiraKey, "In Review").catch((err) =>
+        console.error("Jira transition error (In Review):", err),
       );
-      const doneCount = parseInt(stats.rows[0].done_count, 10);
-      const totalCount = parseInt(stats.rows[0].total_count, 10);
-      if (doneCount >= 1) await awardBadge(req.user!.id, "task_count_1");
-      if (doneCount === totalCount && totalCount > 0)
-        await awardBadge(req.user!.id, "tasks_all_done");
     }
 
     res.json({ ...result.rows[0], jira_issue_key: jiraKey });
   } catch (error) {
+    console.error("Ошибка обновления задачи:", error);
     res.status(500).json({ message: "Ошибка обновления задачи" });
   }
 };

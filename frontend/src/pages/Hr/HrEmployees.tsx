@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import {
-  UserPlus,
   Search,
   Mail,
   Clock,
@@ -121,12 +120,6 @@ export const HrEmployees: React.FC = () => {
     <div className="hr-employees">
       <div className="hr-employees-header">
         <h1 className="page-title">Управление сотрудниками</h1>
-        <button
-          className="hr-btn-primary"
-          onClick={() => setIsInviteOpen(true)}
-        >
-          <UserPlus size={18} /> Пригласить
-        </button>
       </div>
 
       {isInviteOpen && (

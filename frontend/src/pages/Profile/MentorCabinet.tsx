@@ -10,7 +10,11 @@ import {
   Smile,
   Meh,
   Frown,
+  ExternalLink,
+  XCircle,
+  Check,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/client";
 
 interface Mentee {
@@ -23,30 +27,12 @@ interface Mentee {
   latest_mood: number | null;
 }
 
-interface MentorTask {
-  id: string;
+interface ReviewTask {
+  task_id: string;
   title: string;
-  desc: string;
-  isUrgent: boolean;
-  done: boolean;
+  mentee_name: string;
+  jira_issue_key: string | null;
 }
-
-const INITIAL_TASKS_MOCK: MentorTask[] = [
-  {
-    id: "t1",
-    title: "Проверить архитектурную схему",
-    desc: "Виктор Козлов • До конца дня",
-    isUrgent: true,
-    done: false,
-  },
-  {
-    id: "t2",
-    title: "Назначить встречу-знакомство",
-    desc: "Новый стажер • Завтра",
-    isUrgent: false,
-    done: false,
-  },
-];
 
 const getMoodIcon = (score: number | null) => {
   if (!score) return <Meh size={16} className="text-gray" />;
@@ -58,17 +44,32 @@ const getMoodIcon = (score: number | null) => {
 };
 
 export const MentorCabinet: React.FC = () => {
+  const navigate = useNavigate();
+
   const [mentees, setMentees] = useState<Mentee[]>([]);
   const [stats, setStats] = useState({ active: 0, completed: 0 });
-  const [tasks, setTasks] = useState<MentorTask[]>(INITIAL_TASKS_MOCK);
+
+  const [reviewTasks, setReviewTasks] = useState<ReviewTask[]>([]);
+  const [comments, setComments] = useState<Record<string, string>>({});
+  const [processingId, setProcessingId] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await apiClient.get("/mentor/my-mentees");
-        setMentees(res.data.mentees);
-        setStats(res.data.stats);
+        const [menteesRes, reviewsRes] = await Promise.allSettled([
+          apiClient.get("/mentor/my-mentees"),
+          apiClient.get("/mentor/reviews"),
+        ]);
+
+        if (menteesRes.status === "fulfilled") {
+          setMentees(menteesRes.value.data.mentees);
+          setStats(menteesRes.value.data.stats);
+        }
+        if (reviewsRes.status === "fulfilled") {
+          setReviewTasks(reviewsRes.value.data);
+        }
       } catch (err) {
         console.error("Ошибка загрузки подопечных:", err);
       } finally {
@@ -78,10 +79,27 @@ export const MentorCabinet: React.FC = () => {
     fetchData();
   }, []);
 
-  const toggleTask = (taskId: string) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, done: !t.done } : t)),
-    );
+  const handleReview = async (taskId: string, status: "done" | "pending") => {
+    if (processingId) return;
+    setProcessingId(taskId);
+    const comment = comments[taskId] || "";
+
+    try {
+      await apiClient.post(`/mentor/tasks/${taskId}/review`, {
+        status,
+        comment,
+      });
+      setReviewTasks((prev) => prev.filter((t) => t.task_id !== taskId));
+      setComments((prev) => {
+        const next = { ...prev };
+        delete next[taskId];
+        return next;
+      });
+    } catch (err) {
+      console.error("Ошибка ревью:", err);
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   if (loading) {
@@ -131,7 +149,6 @@ export const MentorCabinet: React.FC = () => {
                   >
                     {initials}
                   </div>
-
                   <div
                     className="task-info flex-col justify-center"
                     style={{ marginLeft: "12px", minWidth: "220px" }}
@@ -157,7 +174,6 @@ export const MentorCabinet: React.FC = () => {
                       </span>
                     </div>
                   </div>
-
                   <div className="flex-col gap-12 align-end ml-auto">
                     <div className="flex-row gap-8 align-center">
                       {getMoodIcon(mentee.latest_mood)}
@@ -171,7 +187,7 @@ export const MentorCabinet: React.FC = () => {
                     <div className="flex-row gap-8">
                       <button
                         className="mood-btn auto-width selected flex-row align-center gap-8"
-                        onClick={() => alert(`План развития: ${mentee.name}`)}
+                        onClick={() => navigate(`/hr/mentee/${mentee.id}/plan`)}
                       >
                         <Target size={16} /> <span>План развития</span>
                       </button>
@@ -191,38 +207,113 @@ export const MentorCabinet: React.FC = () => {
       </div>
 
       <div className="widget">
-        <div className="widget-title">Задачи наставника</div>
+        <div className="widget-title">
+          Задачи на проверку
+          <span className="widget-subtitle">{reviewTasks.length} ожидают</span>
+        </div>
         <div className="task-list">
-          {tasks.map((task) => (
-            <div
-              key={task.id}
-              className={`task-item align-center p-3 cursor-pointer ${task.isUrgent && !task.done ? "active" : ""}`}
-              onClick={() => toggleTask(task.id)}
-            >
-              <div className={`task-checkbox ${task.done ? "checked" : ""}`} />
-              <div
-                className="task-info"
-                style={{
-                  opacity: task.done ? 0.6 : 1,
-                  transition: "opacity 0.2s",
-                }}
-              >
-                <h4
-                  className={`mb-1 m-0 ${task.isUrgent && !task.done ? "text-orange" : "text-dark"}`}
-                  style={{
-                    textDecoration: task.done ? "line-through" : "none",
-                  }}
-                >
-                  {task.title}
-                </h4>
-                <p
-                  className={`${task.isUrgent && !task.done ? "text-dark" : "text-gray"} m-0`}
-                >
-                  {task.desc}
-                </p>
-              </div>
+          {reviewTasks.length === 0 ? (
+            <div className="text-center p-4 text-gray text-sm">
+              <CheckCircle
+                size={32}
+                style={{ margin: "0 auto 8px", color: "var(--success)" }}
+              />
+              <p>Все задачи проверены</p>
             </div>
-          ))}
+          ) : (
+            reviewTasks.map((task) => (
+              <div
+                key={task.task_id}
+                className="task-item flex-col gap-12 p-3 active"
+              >
+                <div className="flex-row align-center gap-8 w-full">
+                  <Clock
+                    size={16}
+                    style={{ color: "var(--nau-orange)", flexShrink: 0 }}
+                  />
+                  <h4 className="m-0 text-dark" style={{ fontSize: "14px" }}>
+                    {task.title}
+                  </h4>
+                </div>
+                <div
+                  className="flex-row align-center gap-8 w-full"
+                  style={{ paddingLeft: "24px" }}
+                >
+                  <span className="text-sm text-gray">{task.mentee_name}</span>
+                  {task.jira_issue_key && (
+                    <a
+                      href={`https://your-domain.atlassian.net/browse/${task.jira_issue_key}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="task-tag hr-jira-tag"
+                      style={{ margin: 0, textDecoration: "none" }}
+                    >
+                      <ExternalLink size={10} /> {task.jira_issue_key}
+                    </a>
+                  )}
+                </div>
+
+                <div
+                  className="flex-col gap-8 w-full"
+                  style={{ paddingLeft: "24px" }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Комментарий (для доработки)"
+                    value={comments[task.task_id] || ""}
+                    onChange={(e) =>
+                      setComments((prev) => ({
+                        ...prev,
+                        [task.task_id]: e.target.value,
+                      }))
+                    }
+                    className="hr-input"
+                    style={{ fontSize: "13px", padding: "6px 8px" }}
+                  />
+                  <div className="flex-row gap-8">
+                    <button
+                      className="mood-btn auto-width selected"
+                      style={{
+                        padding: "6px 10px",
+                        fontSize: "12px",
+                        gap: "4px",
+                        background: "var(--success)",
+                        borderColor: "var(--success)",
+                      }}
+                      onClick={() => handleReview(task.task_id, "done")}
+                      disabled={processingId === task.task_id}
+                    >
+                      {processingId === task.task_id ? (
+                        <Loader2 size={12} className="spinner" />
+                      ) : (
+                        <Check size={12} />
+                      )}{" "}
+                      Принять
+                    </button>
+                    <button
+                      className="mood-btn auto-width"
+                      style={{
+                        padding: "6px 10px",
+                        fontSize: "12px",
+                        gap: "4px",
+                        color: "var(--danger)",
+                        borderColor: "var(--danger)",
+                      }}
+                      onClick={() => handleReview(task.task_id, "pending")}
+                      disabled={processingId === task.task_id}
+                    >
+                      {processingId === task.task_id ? (
+                        <Loader2 size={12} className="spinner" />
+                      ) : (
+                        <XCircle size={12} />
+                      )}{" "}
+                      Вернуть
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -240,7 +331,6 @@ export const MentorCabinet: React.FC = () => {
               <span className="badge-title">Выпущено</span>
             </div>
           </div>
-
           <div className="badge-item">
             <div className="badge-icon gold">
               <Clock size={28} />
@@ -250,7 +340,6 @@ export const MentorCabinet: React.FC = () => {
               <span className="badge-title">Потрачено</span>
             </div>
           </div>
-
           <div className="badge-item">
             <div className="badge-icon locked">
               <BookOpen size={28} />

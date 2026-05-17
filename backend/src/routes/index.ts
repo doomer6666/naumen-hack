@@ -32,7 +32,11 @@ import {
   jiraConnect,
 } from "../controllers/integration.controller";
 import { authMiddleware } from "../middleware/authMiddleware";
-import { getMyMentees } from "../controllers/mentor.controller";
+import {
+  getMyMentees,
+  getPendingReviews,
+  reviewTask,
+} from "../controllers/mentor.controller";
 
 const router = Router();
 
@@ -77,5 +81,7 @@ router.get("/integrations/jira/connect", authMiddleware, jiraConnect);
 
 // === Mentor ===
 router.get("/mentor/my-mentees", authMiddleware, getMyMentees);
+router.post("/mentor/tasks/:taskId/review", authMiddleware, reviewTask);
+router.get("/mentor/reviews", authMiddleware, getPendingReviews);
 
 export default router;

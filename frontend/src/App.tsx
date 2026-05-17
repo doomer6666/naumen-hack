@@ -31,11 +31,13 @@ const App: React.FC = () => {
 
           {/* === ЗАЩИЩЕННЫЕ МАРШРУТЫ === */}
           {/* Проверяем, авторизован ли пользователь вообще. Если нет -> /login */}
-          <Route element={<ProtectedRoute allowedRoles={["newbie", "hr", "mentor"]} />}>
-            
+          <Route
+            element={
+              <ProtectedRoute allowedRoles={["newbie", "hr", "mentor"]} />
+            }
+          >
             {/* Оборачиваем в AppLayout (сайдбар, хедер и т.д.) */}
             <Route element={<AppLayout />}>
-              
               {/* Общие страницы (доступны всем авторизованным) */}
               <Route path="/profile" element={<ProfilePage />} />
 
@@ -53,9 +55,15 @@ const App: React.FC = () => {
               <Route element={<ProtectedRoute allowedRoles={["hr"]} />}>
                 <Route path="/hr/dashboard" element={<HrDashboard />} />
                 <Route path="/hr/templates" element={<HrTemplates />} />
-                <Route path="/hr/templates/:id/edit" element={<HrTemplateEditor />} />
+                <Route
+                  path="/hr/templates/:id/edit"
+                  element={<HrTemplateEditor />}
+                />
                 <Route path="/hr/employees" element={<HrEmployees />} />
-                <Route path="/hr/employees/:id/plan" element={<HrEmployeePlan />} />
+                <Route
+                  path="/hr/employees/:id/plan"
+                  element={<HrEmployeePlan />}
+                />
                 <Route path="/hr/feedbacks" element={<HrFeedbacks />} />
                 <Route path="/hr/integrations" element={<PlaceholderPage />} />
                 <Route path="/hr/settings" element={<PlaceholderPage />} />
@@ -64,9 +72,11 @@ const App: React.FC = () => {
               {/* --- Ментор --- */}
               <Route element={<ProtectedRoute allowedRoles={["mentor"]} />}>
                 <Route path="/mentor/my-mentees" element={<MenteesList />} />
-                <Route path="/mentor/my-mentees/:id/progress" element={<PlanPage />} />
+                <Route
+                  path="/mentor/mentee/:userId/plan"
+                  element={<PlanPage />}
+                />
               </Route>
-
             </Route>
           </Route>
 

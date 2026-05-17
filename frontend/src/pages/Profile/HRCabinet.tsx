@@ -4,7 +4,6 @@ import {
   Users,
   AlertTriangle,
   FileText,
-  Plus,
   Loader2,
   Smile,
   Meh,
@@ -106,12 +105,6 @@ export const HRCabinet: React.FC = () => {
       <div className="widget">
         <div className="widget-title">Быстрые действия</div>
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <button
-            className="mood-btn selected"
-            style={{ padding: "12px", flexDirection: "row", gap: "12px" }}
-          >
-            <Plus size={18} /> Пригласить сотрудника
-          </button>
           <button
             className="mood-btn"
             style={{ padding: "12px", flexDirection: "row", gap: "12px" }}
