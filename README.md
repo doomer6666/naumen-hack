@@ -3,6 +3,9 @@ NAUMEN Адаптации
 Ссылка на деплой(при ошибке 404 попробуйте перезагрузить страницу и залогинится снова, также возможна продолжительная загрузка,из-за ограничений платформы):
 [https://hack-two-rho.vercel.app/](https://hack-two-rho.vercel.app/)
 
+Доска Jira:
+https://naumen.atlassian.net/jira/software/projects/LZGN/boards/2
+
 Тестовые аккаунты (Пароль для всех: password123)
 
 Роль Email Имя Возможности
