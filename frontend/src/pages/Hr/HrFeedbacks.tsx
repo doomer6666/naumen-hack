@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, Search, Smile, Meh, Frown, AlertTriangle } from 'lucide-react';
+import { MessageSquare, Search, Smile, Meh, Frown, AlertTriangle, CheckCircle } from 'lucide-react';
 import './HrFeedbacks.css';
 
 type Mood = 'positive' | 'neutral' | 'negative';
@@ -21,6 +21,8 @@ const moodConfig: Record<Mood, { label: string; icon: React.ReactNode; classMod:
 const HrFeedbacks: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<Mood | 'all'>('all');
   const [search, setSearch] = useState('');
+  const [activeActionId, setActiveActionId] = useState<string | null>(null);
+  const [handledIds, setHandledIds] = useState<string[]>([]);
 
   const feedbacks: FeedbackEntry[] = [
     { id: '1', employeeName: 'Алексей Смирнов', date: '25.10.2023', mood: 'negative', comment: 'Не хватает доступов, жду 3 день. Процесс стоит.' },
@@ -35,6 +37,13 @@ const HrFeedbacks: React.FC = () => {
     .filter(f => f.employeeName.toLowerCase().includes(search.toLowerCase()));
 
   const negativeCount = feedbacks.filter(f => f.mood === 'negative').length;
+
+  const handleActionClick = (fbId: string, action: string) => {
+    // Здесь могла бы быть логика открытия чата или создания встречи
+    alert(`Действие: "${action}" для отзыва от ${fbId}`);
+    setHandledIds([...handledIds, fbId]);
+    setActiveActionId(null);
+  };
 
   return (
     <div className="hr-feedbacks">
@@ -70,7 +79,7 @@ const HrFeedbacks: React.FC = () => {
             </button>
           </div>
           
-          <div className="hr-templates-search" style={{ margin: 0, width: '300px' }}>
+          <div className="hr-templates-search hr-fb-search">
             <Search size={18} color="var(--nau-gray)" />
             <input 
               type="text"
@@ -85,6 +94,8 @@ const HrFeedbacks: React.FC = () => {
         <div className="hr-fb-list">
           {filteredFeedbacks.map((fb) => {
             const mood = moodConfig[fb.mood];
+            const isHandled = handledIds.includes(fb.id);
+            
             return (
               <div key={fb.id} className={`hr-fb-item ${mood.classMod}`}>
                 <div className="hr-fb-header">
@@ -101,11 +112,36 @@ const HrFeedbacks: React.FC = () => {
                   </div>
                 </div>
                 <p className="hr-fb-comment">{fb.comment}</p>
+                
                 {fb.mood === 'negative' && (
-                  <button className="hr-fb-action-btn">
-                    <AlertTriangle size={14} />
-                    Реагировать
-                  </button>
+                  <div className="hr-fb-action-wrapper">
+                    {isHandled ? (
+                      <button className="hr-fb-action-btn handled" disabled>
+                        <CheckCircle size={14} />
+                        В работе
+                      </button>
+                    ) : (
+                      <>
+                        <button 
+                          className="hr-fb-action-btn"
+                          onClick={() => setActiveActionId(activeActionId === fb.id ? null : fb.id)}
+                        >
+                          <AlertTriangle size={14} />
+                          Реагировать
+                        </button>
+                        {activeActionId === fb.id && (
+                          <div className="hr-fb-dropdown">
+                            <button onClick={() => handleActionClick(fb.id, 'Написать сотруднику')}>
+                              Написать сотруднику
+                            </button>
+                            <button onClick={() => handleActionClick(fb.id, 'Связаться с наставником')}>
+                              Связаться с наставником
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             );
@@ -119,6 +155,9 @@ const HrFeedbacks: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Оверлей для закрытия выпадающего меню */}
+      {activeActionId && <div className="hr-overlay" onClick={() => setActiveActionId(null)} />}
     </div>
   );
 };

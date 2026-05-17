@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, FileText, Search, MoreVertical, Trash2, ArrowDownAZ, CalendarDays } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, FileText, Search, MoreVertical, Trash2, CalendarDays, ArrowDownAZ } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './HrTemplates.css';
 
@@ -8,7 +8,7 @@ interface Template {
   name: string;
   role: string;
   stages: number;
-  lastUpdated: string; // формат DD.MM.YYYY
+  lastUpdated: string;
 }
 
 type SortType = 'date' | 'alpha';
@@ -35,7 +35,6 @@ const HrTemplates: React.FC = () => {
       if (sortType === 'alpha') {
         return a.name.localeCompare(b.name);
       }
-      // Сортировка по дате (новые сверху)
       const dateA = a.lastUpdated.split('.').reverse().join('-');
       const dateB = b.lastUpdated.split('.').reverse().join('-');
       return new Date(dateB).getTime() - new Date(dateA).getTime();
@@ -51,6 +50,26 @@ const HrTemplates: React.FC = () => {
     e.stopPropagation();
     setOpenMenuId(openMenuId === id ? null : id);
   };
+
+  // Закрытие меню при клике вне его
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (openMenuId) {
+        setOpenMenuId(null);
+      }
+    };
+
+    // Добавляем слушатель с небольшой задержкой, чтобы клик, открывший меню, не закрыл его сразу
+    if (openMenuId) {
+      setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+      }, 0);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [openMenuId]);
 
   return (
     <div className="hr-templates">
@@ -121,7 +140,7 @@ const HrTemplates: React.FC = () => {
                     <MoreVertical size={16} />
                   </button>
                   {openMenuId === template.id && (
-                    <div className="hr-dropdown-menu">
+                    <div className="hr-dropdown-menu" onClick={(e) => e.stopPropagation()}>
                       <button className="hr-dropdown-item danger" onClick={(e) => handleDelete(e, template.id)}>
                         <Trash2 size={14} />
                         Удалить
@@ -140,9 +159,6 @@ const HrTemplates: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* Overlay для закрытия меню при клике вне */}
-      {openMenuId && <div className="hr-overlay" onClick={() => setOpenMenuId(null)} />}
     </div>
   );
 };

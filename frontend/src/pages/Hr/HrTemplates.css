@@ -95,12 +95,15 @@
   background: var(--nau-light-gray);
   cursor: pointer;
   transition: all 0.2s ease;
+  /* Добавлена прозрачная рамка, чтобы не было скачка размеров при ховере */
+  border: 1px solid transparent; 
 }
 
+/* Исправлено мерцание: убран translateY, используется только тень и рамка */
 .hr-template-item:hover {
   background: var(--nau-white);
-  box-shadow: var(--shadow);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: var(--nau-border);
 }
 
 .hr-template-icon {
@@ -181,15 +184,6 @@
 
 .hr-dropdown-item.danger:hover {
   background: #fde8e8;
-}
-
-.hr-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 40;
 }
 
 .hr-icon-btn {
