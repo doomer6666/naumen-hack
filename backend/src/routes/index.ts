@@ -14,7 +14,6 @@ import {
   getMyProgress,
 } from "../controllers/gamification.controller";
 import {
-  getAnalytics,
   getTemplates,
   createTemplate,
   assignPlan,
@@ -26,6 +25,7 @@ import {
   getEmployeePlan,
   getTemplateById,
   updateTemplate,
+  getHrAnalytics,
 } from "../controllers/hr.controller";
 import {
   jiraWebhook,
@@ -68,7 +68,6 @@ router.get("/badges/available", authMiddleware, getAvailableBadges);
 router.get("/badges/my", authMiddleware, getMyBadges);
 
 //HR Panel
-router.get("/hr/analytics", authMiddleware, getAnalytics);
 router.get("/hr/templates", authMiddleware, getTemplates);
 router.post("/hr/users/:id/assign-plan", authMiddleware, assignPlan);
 router.patch("/hr/users/:id/plan/tasks/:taskId", authMiddleware, hrUpdateTask);
@@ -80,7 +79,7 @@ router.patch("/hr/employees/:id/plan", authMiddleware, updateMentor);
 router.post("/hr/templates", authMiddleware, createTemplate);
 router.get("/hr/templates/:id", authMiddleware, getTemplateById);
 router.put("/hr/templates/:id", authMiddleware, updateTemplate);
-
+router.get("/hr/analytics", authMiddleware, getHrAnalytics);
 //Integration
 router.post("/webhooks/jira", jiraWebhook);
 router.get("/integrations/jira/connect", authMiddleware, jiraConnect);
