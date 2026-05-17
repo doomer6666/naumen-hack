@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import pool from "./config/db";
-import authRoutes from "./routes/auth.routes";
+import routes from "./routes";
 
 dotenv.config();
 
@@ -11,7 +11,7 @@ const app = express();
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
-app.use("/api/v1", authRoutes);
+app.use("/api/v1", routes);
 
 const PORT = process.env.PORT || 8080;
 
